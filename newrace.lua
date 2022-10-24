@@ -155,10 +155,132 @@ track={
 tracklength=count(track)
 
 bgx=0
+screensize=128
+
+-- converts x -1..1 to a position on the road in pixels
+-- much %age down road (0=top)
+-- midw middle of the screen
+-- roadw2 width of the road
+function roadX(x, roadw2, much)
+    local perspective = 0.8*(much)+0.08
+    local roadw=roadw2*0.5*perspective
+    local midw=0.5+(turn*(1-much))^3
+    local x2 = midw-(x*perspective*screensize)--midw-roadw-x
+    return x2
+end
+
+-------------------
+-- roadside objects
+
+local obs = {
+    -- {
+    --     d=15,
+    --     x=0.5,
+    --     spr=1,
+    --     hw=1,
+    --     sh=1,
+    -- },
+    -- {
+    --     d=20,
+    --     x=-0.5,
+    --     spr=1,
+    --     hw=1,
+    --     sh=1,
+    -- },
+    -- {
+    --     d=25,
+    --     x=0.5,
+    --     spr=1,
+    --     hw=1,
+    --     sh=1,
+    -- },
+    -- {
+    --     d=30,
+    --     x=0.5,
+    --     spr=1,
+    --     hw=1,
+    --     sh=1,
+    -- },
+    -- {
+    --     d=35,
+    --     x=-0.5,
+    --     spr=1,
+    --     hw=1,
+    --     sh=1,
+    -- }
+}
+
+obtypes={
+    tree={
+        sprx=4*8, -- spr 1 coords
+        spry=0,
+        w=3,
+        h=4,
+        ax=1, -- anchor right
+    },
+    sign={
+        sprx=7*8, -- spr 1 coords
+        spry=0,
+        w=3,
+        h=2,
+        ax=1, -- anchor right
+    }
+}
+
+-- temp gen obs
+for i=0,100 do
+    local pos={
+        d=i*25,
+        x=-0.5,
+    }
+
+    local obchoice=flr(rnd(3))
+    if obchoice==0 then
+        add(obs, {
+            d=i*25,
+        x=-0.5,
+            sprx=4*8, -- spr 1 coords
+            spry=0,
+            w=3,
+            h=4,
+            ax=1, -- anchor right
+        })
+    else if obchoice==1 then
+        add(obs, {
+            d=i*25,
+            x=-0.5,
+            sprx=7*8, -- spr 1 coords
+            spry=0,
+            w=3,
+            h=2,
+            ax=1, -- anchor right
+        })
+    else
+        add(obs, {
+            d=i*25,
+            x=-0.5,
+            sprx=7*8, -- spr 1 coords
+            spry=2*8,
+            w=1,
+            h=2,
+            ax=2, -- anchor right
+        })
+    end
+end
+    -- add(obs, {
+    --     d=i*10,
+    --     x=0.5,
+    --     sprx=5*8,
+    --     spry=0,
+    --     w=4,
+    --     h=4,
+    --     ax=-1, -- anchor left
+    -- })
+end
 
 function _draw()
     cls()
-    local screensize=128
+    
     local roadh=78+height
 
     -- background
@@ -244,15 +366,73 @@ function _draw()
     print("x: "..x)
     --print("track: "..getTrack(distance) and getTrack(distance) or -1)
     print(turn)
+    
 
     -- temp object
-    spr(0x176, 96, 32)
+    for ob in all(obs) do
+        local obd=ob.d-distance
+        local clipd=100
+        if obd > 0 and obd<clipd then
+            local ay=((clipd-obd)/clipd)^3.5
+            -- not quite right speed
+            
+            local perspective = 0.8*(ay)+0.08
+            local midw=0.5+(turn*(1-ay))^3
+            local roadw=1.2
+            roadw=roadw*0.5*perspective
+            local px=(midw-roadw)*screensize
+            
+            printh("px:"..px.." ob.x:"..ob.x.." midw:"..midw.." ob.x+midw:"..ob.x+midw)
+
+            local py=ay*roadh+(screensize-roadh)
+            --sspr takes a RECTANGLE from the sprite sheet
+            local scaledh=ob.h*8*perspective*3
+            local scaledw=ob.w*8*perspective*3
+            sspr(
+                ob.sprx,
+                ob.spry,
+                ob.w*8,
+                ob.h*8,
+                px-scaledw*ob.ax,
+                py-scaledh, --move up based on the height
+                scaledw,
+                scaledh
+            )
+
+                
+            -- px,
+            --  ay*roadh+(screensize-roadh)-6, 
+            --  1, 1)
+        end
+        -- spr(1, 50, 50, 1, 1)
+    end
 end
 
--------------------
--- roadside objects
+-- -- temp
+-- local screenCenter = {screensize.x/2, screensize.y/2}; // half of your screen resolution
+--                                                             // try changing it to see what happens
+--                                                             // you can animate it to add special effects
+-- float perspStrength = 500.0f;   // actually an inverse of perspective strength
+--                                 // lower values means bigger effect
 
-local ob = {}
+-- Vec2 project( Vec3 pos )        // projection code
+-- {
+--     Vec2 localPos = pos - screenCenter; // Move point (0,0) to the center of your screen
+
+--     float scale = pos.z/perspStrength;  // scale your Z to ~(0-1) range
+--     scale += 1.0f;                      // move your Z to ~(1-2) range
+
+--     localPos.x /= scale;                // scale position according to Z distance
+--     localPos.y /= scale;
+
+--     Vec2 result = localPos + screenCenter;  // Move point (0,0) back to the corner
+
+--     return result;
+-- //    return Vec3( result.x, result.y, scale ); // you can also return scale used for this object
+--                                                 // so you can render distant objects as smaller
+-- }
+-- --end
+
 
 function updateOb() 
 end
