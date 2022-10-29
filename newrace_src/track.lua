@@ -29,7 +29,7 @@ tracklength=count(track)
 
 -------------------
 
-local shadinggrs = {
+shadinggrs = {
     {col.green1,col.grey1},
     {col.green1,col.green2},
     {col.green1,col.green2},
@@ -43,7 +43,7 @@ local shadinggrs = {
     {col.green1,col.green2},
 }
 
-local shadingroad = {
+shadingroad = {
     col.blue2,
     col.grey2,
     col.grey2,

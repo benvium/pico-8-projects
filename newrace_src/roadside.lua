@@ -39,7 +39,7 @@ end
 addSea(200)
 addSea(800)
 
--- temp gen obs
+-- generate random roadside objects
 for i=0,200 do
     local ob
     local obchoice=flr(rnd(5))
@@ -95,11 +95,6 @@ for i=0,200 do
 
     ob.d=i*10
 
-    -- no objects during addSea
-    -- if ((ob.d>200 and ob.d < 400) or (ob.d>800 and ob.d<100)) then
-    --     return
-    -- end
-
     local isLeft=flr(rnd(2))==0;
     ob.x=isLeft and -1 or 1
     if ob.scale==nil then
@@ -112,9 +107,10 @@ for i=0,200 do
     add(obs, ob, 1)
 end
 
+-- add some gems
+addGems(300,20, 0.3, 0, 10)
 
-
-
+addGems(1800,20, -0.3, 0, 10)
 
 function update_roadside()
      -- UPDATE RECTS OF ROADSIDE OBJECTS
@@ -166,6 +162,21 @@ function updateobject(ob)
             w=scaledw,
             h=scaledh,
         }
+
+        -- check for collisions (for gems)
+        if ob.collide and playerrect~=nil then
+            if intersects(ob.rect, playerrect) then
+                
+                score+=1
+                if score>=gems then
+                    sfx(5,3)
+                else
+                    sfx(4,3)
+                end
+                -- todo score
+                del(obs, ob)
+            end
+        end
     else
         ob.rect=nil
     end
@@ -186,4 +197,7 @@ function drawobject(ob)
         ob.rect.h,
         ob.flipx
     )
+
+    
+    -- rect(ob.rect.x, ob.rect.y, ob.rect.x+ob.rect.w, ob.rect.y+ob.rect.h, col.white)
 end

@@ -3,17 +3,21 @@
 distance=0
 
 -- current player/car
+score=0
+gems=0
 
 --consts
 maxspeed=3
 steerspeed=0.4
 --
 
-
+enginesfx=-1
 speed=0
 x=0
 dx=0
-skid=false
+skid=0
+carspr=0x040
+playerrect = nil
 
 -- how far track is turning left/right
 turn=0
@@ -27,6 +31,8 @@ screensize=128
 -- size of the road
 roadh=78+height
 
+--
+rumbley=0
 
 ----------------------------
 --- UPDATE ---
@@ -62,13 +68,15 @@ function _update60()
     -- play skid sound
     local isSkid = abs(dx)>0.3 and abs(throwspeed)>0.3
 
-    if not skid and isSkid then
+    if skid==0 and isSkid then
         sfx(0,1)
-        skid=true
     end
-    if skid and not isSkid then
+    if skid>0 and not isSkid then
         sfx(-1,1)
-        skid=false
+        skid=0
+    end
+    if isSkid then
+        skid+=1
     end
 
     dx=dx-throwspeed
@@ -76,6 +84,7 @@ function _update60()
     x=x+dx
 
     -- if we go off the sides, slow down the car
+    -- todo this should be based on the road width
     local off=60
     if x<-off or x>off then 
         if x<-off then x=-off end
@@ -83,17 +92,34 @@ function _update60()
         if (speed>(maxspeed/4)) then
             speed*=0.95
         end
+        rumbley=(rumbley+1)%3
         if rumble==false then
             rumble=true
             -- TODO the sound effect isn't working yet
             sfx(1,2)
         end
     else
+        rumbley=0
         if rumble==true then
             rumble=false
             sfx(-1,2)
         end
     end
+
+    -- engine sfx
+    if speed<=0 then 
+        sfx(9,2)
+    elseif speed<maxspeed/4 then
+        sfx(10,2)
+    elseif speed<maxspeed/2 then
+        sfx(11,2)
+    elseif speed<maxspeed/1.5 then
+        sfx(13,2)
+    else--if speed<maxspeed/1.5 then
+        sfx(14,2)
+    end
+    
+    --
     
 
     -- move down the track
@@ -121,6 +147,8 @@ function _update60()
 
     update_cars()
     update_roadside()
+
+    update_player()
 end
 
 ----------------------------
@@ -128,16 +156,19 @@ end
 ----------------------------
 function _draw()
     cls(col.blue3)
+
+    -- cam shake when you drive off edge
+    camera(0,rumbley)
     
     -- background
     map(0,5,bgx-128,64-8-roadh,16,16)
     map(0,5,bgx,64-8-roadh,16,16)
     map(0,5,bgx+128,64-8-roadh,16,16)
     -- ^ todo ineffecient! drawing too much
-    -- map(0,13,0,roadh-96,16,16)
 
+    -- draw road line-by-line
     for y1=0,roadh do
-        local y=y1+screensize-roadh --+height)
+        local y=y1+screensize-roadh
         local much=y1/roadh
         local perspective = 0.8*(much)+0.08
 
@@ -147,35 +178,26 @@ function _draw()
         local edgew=roadw*0.2
 
         local lgrassw = (midw-roadw-edgew)*screensize
-        local ledge = (midw-roadw)*screensize
+        local ledge = flr((midw-roadw)*screensize)
         local redge = (midw+roadw)*screensize
         local rgrass = (midw+roadw+edgew)*screensize
 
         
         local isStripe = sin(10*((1-perspective)^3)+(distance*0.05)%3.14)>0
-        
-        -- local shade=shadingrdtx[flr(much*16)+1]
-        --local roady = l and shade or shade+2
-
         local shade2=shadinggrs[flr(much*10)+1]
         local grasscolor= isStripe and shade2[1] or shade2[2]
 
         shade2=shadinglns[flr(much*10)+1]
         local linecolor = isStripe and shade2[1] or shade2[2]
 
-        -- draw road first over whole screen
-        -- local tlineY = (shade+(y%2))/8
-        -- if isStripe then
-        --  tlineY=tlineY+2
-        -- end
-        -- tline(0, y, 128, y, 0, tlineY)
-
         local roadcolor=shadingroad[flr(much*10)+1]
-        line(flr(ledge), y, redge, y, roadcolor)
+
         line(0, y, lgrassw, y, grasscolor)
 
         -- left edge
         line(lgrassw, y, ledge, y, linecolor)
+
+        line(ledge, y, redge, y, roadcolor)
         
         line(redge,y,rgrass, y, linecolor)
         line(rgrass, y, screensize, y, grasscolor)
@@ -187,26 +209,15 @@ function _draw()
 
     end
 
-    local carspr=0x40
-    if height>20 then
-        carspr=0x48
-    elseif height<-10 then
-        carspr=0x44
-    elseif  speed>0.1 then 
-            if btn(1) then
-            -- only support turning when flat...
-            carspr=skid and carsprite.r2 or carsprite.r1
-        elseif btn(0) then
-            carspr=skid and carsprite.l2 or carsprite.l1
-        end
-    end
+ 
 
-    color(6)
-    print(stat(7))
-    print("distance: "..flr(distance))
-    print("x: "..x)
-    --print("track: "..getTrack(distance) and getTrack(distance) or -1)
-    -- print(turn)
+    -- color(6)
+    -- print(stat(7))
+    -- print("distance: "..flr(distance))
+    -- print("x: "..x)
+    -- --print("track: "..getTrack(distance) and getTrack(distance) or -1)
+    -- -- print(turn)
+    -- print("skid:"..skid)
     
 
     -- DRAW ROADSIDE OBJECTS
@@ -222,4 +233,11 @@ function _draw()
     64-16+turn*16+x,
     96-height/15
     ,4,3)
+
+    -- if playerrect~=nil then
+    --     rect(playerrect.x,playerrect.y,playerrect.x+playerrect.w,playerrect.y+playerrect.h,col.white)
+    -- end
+
+    --
+    draw_hud()
 end
