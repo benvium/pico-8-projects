@@ -51,24 +51,75 @@ add(obs, {
 -- end
 
 function trlbCol(ob,flag)
+    
     local tl=map_flag(ob.x, ob.y, flag)
+    -- local tm=map_flag(ob.x+ob.w/2, ob.y, flag)
     local tr=map_flag(ob.x+ob.w-1, ob.y, flag)
+    -- local rm=map_flag(ob.x+ob.w-1, ob.y+ob.h/2, flag)
     local bl=map_flag(ob.x, ob.y+ob.h-1, flag)
+    -- local bm=map_flag(ob.x+ob.w/2, ob.y+ob.h-1, flag)
     local br=map_flag(ob.x+ob.w-1, ob.y+ob.h-1, flag)
+    -- local lm=map_flag(ob.x, ob.y+ob.h/2, flag)
 
     local res = {
         b=bl or br,
         r=tr or br,
         l=tl or bl,
         t=tl or tr,
-        x=ob.x,
-        y=ob.y
+        -- tm=tm,
+        -- rm=rm,
+        -- bm=bm,
+        -- lm=lm
     }
     res.col=res.b or res.t or res.l or res.r
+
+    printh(ob.x..","..ob.y..'='..(res.col and "YES" or "NO"))
     return res
 end
 
 function firstCol(ob,flag)
+    local len = sqrt(ob.dx^2+ob.dy^2)
+
+    -- won't be true if things move..
+    if len==0 then
+        return {col=false}
+    end
+
+    local i=0
+
+    local okPos = {ob.x,ob.y}
+    -- move in direction of vector until we hit something
+    while true do
+        i+=1
+        if i>len then i=len end
+        local newPos = {
+            ob.x+ob.dx*(i/len),
+            ob.y+ob.dy*(i/len)
+        }
+        local res = trlbCol({
+                x=newPos[1],
+                y=newPos[2],
+                h=ob.h,
+                w=ob.w
+            },flag)
+        if res.col then
+            -- how much we couldn't MOVE
+            ob.cx = (ob.x+ob.dx)-okPos[1]
+            ob.cy = (ob.y+ob.dy)-okPos[2]
+            ob.x = okPos[1]
+            ob.y = okPos[2]
+            return res
+        end
+        okPos = newPos
+        if i==len then break end
+    end
+    -- didn't hit anything, move
+    ob.x += ob.dx
+    ob.y += ob.dy
+    return {col=false}
+end
+
+function firstCol2(ob,flag)
     local myob={
         x=ob.x+ob.dx,
         y=ob.y+ob.dy,
@@ -118,54 +169,49 @@ function _update()
             ob.dx=0
             ob.dy=0
             if btn(0) then
-                ob.dx=-7
+                ob.dx=-15
             end
             if btn(1) then
-                ob.dx=7
+                ob.dx=15
             end
             if btn(2) then
-                ob.dy=-7
+                ob.dy=-15
             end
             if btn(3) then
-                ob.dy=7
+                ob.dy=15
             end
         end
 
         local colz = firstCol(ob,0)
 
-        -- local col=false
         if colz.col then
             if ob.type=="ball" then
-                if colz.b then     
-                    if (abs(ob.dy)<1.5) then 
-                        ob.dy=0
-                        -- friction
-                        ob.dx*=0.98
-                    else  
-                        col=true
-                        ob.dy=-(ob.dy*0.8)
-                        ob.dx+=rnd(0.5)-0.25
-                    end
-                end
-                -- if colz.t then     
-                --     col=true
-                --     ob.dy=-(ob.dy*0.6)
+                -- if colz.b then     
+                --     if (abs(ob.dy)<1.5) then 
+                --         ob.dy=0
+                --         -- friction
+                --         ob.dx*=0.98
+                --     else  
+                --         ob.dy=-(ob.dy*0.8)
+                --         ob.dx+=rnd(0.5)-0.25
+                --     end
                 -- end
-                -- if colz.r or colz.l then
+                -- -- if colz.t then     
+                -- --     ob.dy=2 ---(ob.dy*0.6)
+                -- -- end
+                -- if (colz.r or colz.l) and not colz.b then
                 --     ob.dx=-ob.dx*0.6
-                --     col=true
-                -- end
-                -- if colz.col then
-                --     ob.spr=17
-                -- else
-                --     ob.spr=1
                 -- end
             end
             if ob.type=="player" then
+                if colz.l or colz.r then
+                    ob.dx=0
+                end
+                if colz.t or colz.b then
+                    ob.dy=0
+                end
             end
-        end
-        ob.x+=ob.dx
-        ob.y+=ob.dy
+        end 
     end
 
     if btn(5) then

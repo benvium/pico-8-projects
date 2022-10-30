@@ -19,4 +19,15 @@ function clone(from)
     end
     return to
 end
-  
+
+-- returns color at a point on the map
+-- mx/my top-left of map
+function colFromMap(x,y)
+    local spriteunder=mget(x/8,y/8)
+    if spriteunder==0 then return 0 end
+
+    -- convert spritenumber to x/y on sprite sheet
+    local spritex=(spriteunder%16)*8+(x%8)
+    local spritey=flr(spriteunder/16)*8+(y%8)
+    return sget(spritex,spritey)
+end
