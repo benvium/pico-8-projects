@@ -8,7 +8,13 @@ col={
     grey2=6,
     white=7,
     red1=2,
-    red2=8
+    red2=8,
+    brown=4,
+    black=0,
+    orange=9,
+    yellow=10,
+    pink1=14,
+    pint2=15
 }
 
 
@@ -30,4 +36,31 @@ function colFromMap(x,y)
     local spritex=(spriteunder%16)*8+(x%8)
     local spritey=flr(spriteunder/16)*8+(y%8)
     return sget(spritex,spritey)
+end
+
+function tostring(any)
+    if type(any)=="function" then 
+        return "function" 
+    end
+    if any==nil then 
+        return "nil" 
+    end
+    if type(any)=="string" then
+        return any
+    end
+    if type(any)=="boolean" then
+        if any then return "true" end
+        return "false"
+    end
+    if type(any)=="table" then
+        local str = "{ "
+        for k,v in pairs(any) do
+            str=str..tostring(k).."->"..tostring(v).." "
+        end
+        return str.."}"
+    end
+    if type(any)=="number" then
+        return ""..any
+    end
+    return "unkown" -- should never show
 end

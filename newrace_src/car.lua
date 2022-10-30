@@ -1,14 +1,12 @@
 
 
 -- enemy cars
-local cars={}
+cars={}
 
 function add_car(distance, x, type)
     local car={
         d=distance,
         x=x,
-        sprx=0*8, 
-        spry=1*8,
         w=4,
         h=3,
         ax=0.5, -- anchor center
@@ -21,22 +19,27 @@ function add_car(distance, x, type)
     elseif type=="lambo" then
         car.sprx=0
         car.spry=64
+    elseif type=="gray" or type==nil then
+        car.sprx=0*8 
+        car.spry=1*8
     end
     add(cars,car)
 end
 
-add_car(00, -0.55)
-add_car(20, .55, "lambo")
-add_car(150, .55)
-add_car(300, .55,"green")
-add_car(700, -.55,"lambo")
-add_car(1300, -.55)
-add_car(1500, -.55)
-add_car(2000, -.55,"green")
+car_types={"gray","green","lambo"}
 
+nextCar=-1
 
 function update_cars()
-    -- some dupe here
+
+  -- decide when to add more cars
+  nextCar-=1
+  if nextCar<0 then
+    nextCar=30+rnd(200)
+    add_car(distance+100,rnd(1.5)-.75,rnd(car_types),0)
+  end
+
+  -- some dupe here
   playerrect =  {
       x=64-16+turn*16+x+4,
       y=96+height/10+16,
@@ -44,14 +47,10 @@ function update_cars()
       h=2*8
   }
 
-
   for car in all(cars) do
     local wasInFront = car.rect and car.rect.y < playerrect.y
     car.speed = min(car.speed+0.01, maxspeed*0.8)
-    car.d += car.speed --max(0.5, maxspeed*.8) --speed<(maxspeed/2) and 0.5 or 2.5
-    if (car.d>tracklength*100) then
-        car.d=0
-    end
+    car.d += car.speed
     updateobject(car)
 
     -- check for collisions..
@@ -64,13 +63,24 @@ function update_cars()
         }
         if intersects(carhitbox, playerrect) then
             sfx(2,1)
+
+            -- jolt a bit
+            rumbley=2
+            for i=1,10 do
+                pts_add(
+                    64,
+                    96,
+                    112
+                )
+            end
+
             if carhitbox.y>playerrect.y then
                 -- car is behind player
                 car.speed=-0.5
                 speed+=0.5 -- bump player forwards
             else
                 car.speed+=1
-                speed*=0.5 -- slow player down
+                speed*=0.3 -- slow player down
             end
         end
 
@@ -78,6 +88,11 @@ function update_cars()
         if wasInFront and car.rect.y>= playerrect.y then
             sfx(3,3)
         end
+    end
+
+    -- remove cars once they're off screen
+    if car.d < distance-20 then
+        del(cars,car)
     end
 end
 

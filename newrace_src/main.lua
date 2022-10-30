@@ -4,11 +4,12 @@ distance=0
 
 -- current player/car
 score=0
-gems=0
 
 --consts
-maxspeed=3
-steerspeed=0.4
+maxspeed=1.5
+steerspeed=2
+throwspeedconst=2
+acceleration=0.005
 --
 
 enginesfx=-1
@@ -46,23 +47,18 @@ function _update60()
     else
         dx=0
     end
-    -- if btn(2) then
-    --     height=min(50,height+2)
-    --     roadh=78+height
-    -- end
-    -- if btn(3) then
-    --     height=max(-40,height-2)
-    --     roadh=78+height
-    -- end
     if btn(4) then
-        speed=min(maxspeed,speed+0.02)
+        speed=min(maxspeed,speed+acceleration)
     else
-        speed=max(0,speed-0.06)
+        speed=max(0,speed-0.01)
+    end
+    if btn(5) then
+        speed=maxspeed*2
     end
 
     
     -- throw off sides during turns
-    local throwspeed=turn*(speed/maxspeed)
+    local throwspeed=turn*(speed/maxspeed)*throwspeedconst
     
 
     -- play skid sound
@@ -123,7 +119,7 @@ function _update60()
     
 
     -- move down the track
-    distance=(distance+speed)%(tracklength*100)
+    distance=distance+speed
 
     -- interpolate between turns
     local trackidx=flr(distance/100)
@@ -149,6 +145,7 @@ function _update60()
     update_roadside()
 
     update_player()
+    pts_update()
 end
 
 ----------------------------
@@ -157,14 +154,16 @@ end
 function _draw()
     cls(col.blue3)
 
-    -- cam shake when you drive off edge
-    camera(0,rumbley)
-    
     -- background
     map(0,5,bgx-128,64-8-roadh,16,16)
     map(0,5,bgx,64-8-roadh,16,16)
     map(0,5,bgx+128,64-8-roadh,16,16)
     -- ^ todo ineffecient! drawing too much
+
+    -- cam shake when you drive off edge
+    camera(x,rumbley)
+    
+    
 
     -- draw road line-by-line
     for y1=0,roadh do
@@ -174,7 +173,7 @@ function _draw()
 
         local roadw=1.2
         roadw=roadw*0.5*perspective
-        local midw=0.5+(turn*(1-much))^3
+        local midw=0.5+(turn*(1-much))^3+((x/screensize)*(1-much))
         local edgew=roadw*0.2
 
         local lgrassw = (midw-roadw-edgew)*screensize
@@ -183,7 +182,7 @@ function _draw()
         local rgrass = (midw+roadw+edgew)*screensize
 
         
-        local isStripe = sin(10*((1-perspective)^3)+(distance*0.05)%3.14)>0
+        local isStripe = sin(10*((1-perspective)^3)+(distance*0.17)%3.14)>0
         local shade2=shadinggrs[flr(much*10)+1]
         local grasscolor= isStripe and shade2[1] or shade2[2]
 
@@ -192,7 +191,7 @@ function _draw()
 
         local roadcolor=shadingroad[flr(much*10)+1]
 
-        line(0, y, lgrassw, y, grasscolor)
+        line(x, y, lgrassw, y, grasscolor)
 
         -- left edge
         line(lgrassw, y, ledge, y, linecolor)
@@ -200,7 +199,7 @@ function _draw()
         line(ledge, y, redge, y, roadcolor)
         
         line(redge,y,rgrass, y, linecolor)
-        line(rgrass, y, screensize, y, grasscolor)
+        line(rgrass, y, screensize+x, y, grasscolor)
 
         -- line in center of road
         if isStripe then
@@ -227,17 +226,28 @@ function _draw()
         drawobject(car)
     end
 
+    camera(0,0)
+    pts_draw()
+    camera(x,rumbley)
 
     -- DRAW PLAYER CAR
+    local carx=64+x-16--64-16+turn*16+x
+    local cary=96-height/15
     spr(carspr,
-    64-16+turn*16+x,
-    96-height/15
-    ,4,3)
+    carx,
+    cary,
+    4,3)
+
+    if skid>0 then
+        local s=skid%4==0 and 112 or 114
+        spr(s,carx,cary+16,2,1)
+        spr(s,carx+16,cary+16,2,1,true)
+    end
 
     -- if playerrect~=nil then
     --     rect(playerrect.x,playerrect.y,playerrect.x+playerrect.w,playerrect.y+playerrect.h,col.white)
     -- end
 
-    --
+    camera(0,0)
     draw_hud()
 end

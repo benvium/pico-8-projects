@@ -1,3 +1,5 @@
+gems=0
+
 function addGems(d,gap,x,dx,num)
     for i=1,num do
         local newx=(x+dx*(i-1))
@@ -19,7 +21,8 @@ function addGems(d,gap,x,dx,num)
             scaley=3,
             ax=0.5,
             type="gem",
-            collide=true
+            collide=true,
+            keep=true
         })
         gems+=1
     end
