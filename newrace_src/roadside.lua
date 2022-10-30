@@ -2,40 +2,7 @@
 -- roadside objects
 
 obs = {}
-
--- TODO re-add the sea
-function addSea(d)
-    for i=d,d+200,2 do
-        add(obs,{
-            d=i,
-            x=1,
-            sprx=10*8, 
-            spry=3*8,
-            w=6,
-            h=1,
-            scalex=10,
-            scaley=3,
-            ax=-0.2,
-            ay=-0.2,
-            zIndex=-1
-        })
-    end
-    for i=d+50,d+150,50 do
-        add(obs,{
-            d=i,
-        x=1,
-        sprx=112, 
-        spry=8,
-        w=2,
-        h=2,
-        scalex=4,
-        scaley=4,
-        ax=-3,
-        ay=1,
-        zIndex=-1
-        })
-    end
-end
+gems=0
 
 -- spawn an item
 function addRoadsideItem(distance, type,forceX) 
@@ -47,6 +14,16 @@ function addRoadsideItem(distance, type,forceX)
             w=3,
             h=4,
             ax=1+rnd(1)/5, -- vary positions
+            flipx=flr(rnd(2))==0,
+        }
+    elseif type=="tree2" then
+        ob={
+            sprx=96, 
+            spry=64,
+            w=4,
+            h=4,
+            scale=5,
+            ax=1.2,
             flipx=flr(rnd(2))==0,
         }
     elseif type=="lard" then
@@ -121,37 +98,101 @@ function addRoadsideItem(distance, type,forceX)
             ax=1,
             x=-1,
         }
-    elseif type=="postLeft" then
-        ob={
+    elseif type=="tunnel" then
+        -- special case!
+        add(obs,
+        {
+            d=distance,
             sprx=16, 
             spry=96,
             w=1,
             h=4,
-            scale=6,
+            scale=5,
             ax=1,
             x=-1,
-        }
-    elseif type=="postRight" then
-        ob={
+        },1)
+        add(obs,
+        {
+            d=distance,
+            sprx=48, 
+            spry=120,
+            w=1,
+            h=1,
+            scale=20,
+            ax=1,
+            x=-1,
+        },1)
+        add(obs,
+        {
+            d=distance,
             sprx=16, 
             spry=96,
             w=1,
             h=4,
-            scale=6,
-            ax=0,
+            scale=5,
+            ax=1,
+            x=1.5,
+        },1)
+        add(obs,
+        {
+            d=distance,
+            sprx=48, 
+            spry=120,
+            w=1,
+            h=1,
+            scale=20,
+            ax=-0.22,
             x=1,
-        }
-    elseif type=="postTop" then
-        ob={
+        },1)
+        add(obs,
+        {
+            d=distance,
             sprx=24, 
             spry=120,
             w=8,
             h=1,
-            scale=6,
+            scale=3,
             ax=0.5,
-            ay=1,
+            ay=6.6,
             x=0,
-        }
+        },1)
+        return  
+    elseif type=="sea" then
+        -- special case - trigger adding 5 seaItems
+        -- only supported on the right at the moment
+        for seaD=distance,distance+10,4 do
+            add(obs,{
+                d=seaD,
+                x=1,
+                sprx=10*8, 
+                spry=3*8,
+                w=6,
+                h=1,
+                scalex=10,
+                scaley=3,
+                ax=-0.2,
+                ay=-0.2,
+                zIndex=-1
+            })
+        end
+        -- surfer
+        add(obs,{
+            d=distance+5,
+            x=1,
+            sprx=112, 
+            spry=8,
+            w=2,
+            h=2,
+            scalex=4,
+            scaley=4,
+            ax=-2-rnd(2),
+            ay=1,
+            zIndex=1
+            })
+        return
+    else 
+        -- unknown type
+        return        
     end
     if ob==nil then return end
     ob.d=distance
@@ -200,6 +241,10 @@ function spawn(distance)
         elseif itemMode=="alt" then
             altLast=((altLast+1)%#items)+1
             addRoadsideItem(distance, items[altLast])
+        elseif itemMode=="leftright" then
+            -- first on left, second on right
+            addRoadsideItem(distance, items[1],-1)
+            addRoadsideItem(distance, items[2],1)
         elseif itemMode=="random" or itemMode==nil then
             addRoadsideItem(distance, rnd(items))
         end
@@ -208,7 +253,7 @@ function spawn(distance)
     end
 end
 
-function _init()
+function roadside_init()
     -- spawn initial roadside objects
     for i=0,100,10 do
         spawn(i)
@@ -318,4 +363,32 @@ function drawobject(ob)
 
     
     -- rect(ob.rect.x, ob.rect.y, ob.rect.x+ob.rect.w, ob.rect.y+ob.rect.h, col.white)
+end
+
+function addGems(d,gap,x,dx,num)
+    for i=1,num do
+        local newx=(x+dx*(i-1))
+        if newx>1 then 
+            newx=1-(newx%1)
+        end
+        if newx<-1 then
+            newx=-newx%-1
+        end
+
+        add(obs,{
+            d=d+i*gap,
+            x=newx,
+            sprx=1*8, 
+            spry=0*8,
+            w=1,
+            h=1,
+            scalex=3,
+            scaley=3,
+            ax=0.5,
+            type="gem",
+            collide=true,
+            keep=true
+        })
+        gems+=1
+    end
 end

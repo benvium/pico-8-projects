@@ -8,7 +8,7 @@ score=0
 --consts
 maxspeed=1.5
 steerspeed=2
-throwspeedconst=2
+throwspeedconst=2.5
 acceleration=0.005
 --
 
@@ -34,6 +34,14 @@ roadh=78+height
 
 --
 rumbley=0
+
+-- SFX for certain bits of course
+lastAmbience=0
+
+function _init()
+    roadside_init()
+    cars_init()
+end
 
 ----------------------------
 --- UPDATE ---
@@ -122,21 +130,38 @@ function _update60()
     distance=distance+speed
 
     -- interpolate between turns
-    local trackidx=flr(distance/100)
-    local trackNow = track[trackidx%tracklength+1]
-    local trackNext = track[trackidx%tracklength+2]
-    if trackNow==nil then trackNow=0 end
-    if trackNext==nil then trackNext=0 end
-    turn = trackNow + (trackNext-trackNow)*(distance%100)/100
+    -- local trackidx=flr(distance/100)
+    -- local turnNow = track[trackidx%tracklength+1]
+    -- local trackNext = track[trackidx%tracklength+2]
+    -- if trackNow==nil then trackNow=0 end
+    -- if trackNext==nil then trackNext=0 end
+    local trackNow,through=getTrack2(distance)
+
+    local ambience=trackNow[6]
+    if ambience~=lastAmbience then
+        if ambience~=nil then
+            sfx(ambience,0)
+        else
+            sfx(-1,0)
+        end
+        lastAmbience=ambience
+    end
+
+    -- interpolate between turns
+    local turnNow=trackNow[2]
+    local trackNext=getTrack2((distance-through)+trackNow[1])
+    local turnNext=trackNext[2]
+    local turnDiff=turnNext-turnNow
+    turn = (through/trackNow[1])*turnDiff+turnNow
 
     -- interpolate between hills
-    local hillidx=flr(distance/100)
-    local hillNow = hills[hillidx%tracklength+1]
-    local hillNext = hills[hillidx%tracklength+2]
+    local hillNow = trackNow[5]
+    local hillNext = trackNext[5]
     if hillNow==nil then hillNow=0 end
     if hillNext==nil then hillNext=0 end
-    height = (hillNow + (hillNext-hillNow)*(distance%100)/100)*50
-    roadh = 78 + height
+    local hillDiff=hillNext-hillNow
+    height = (through/trackNow[1]) * hillDiff+hillNow
+    roadh = 78 + height*50
 
     -- scroll mountains left and right as we turn
     bgx=(bgx-turn*(speed/maxspeed)*0.75)%128

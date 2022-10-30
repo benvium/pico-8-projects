@@ -33,4 +33,5 @@ function draw_hud()
     print("cars:"..#cars,col.black)
     print("pts:"..#pts,col.black)
     print("distance: "..flr(distance%trackLength2).."/"..trackLength2, col.black)
+    print("through: "..flr(through),col.black)
 end

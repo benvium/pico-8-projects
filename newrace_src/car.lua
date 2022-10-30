@@ -26,6 +26,12 @@ function add_car(distance, x, type)
     add(cars,car)
 end
 
+function cars_init()
+    add_car(20,-.5,"green")
+    add_car(20,.5,"lambo")
+    add_car(40,0,"gray")
+end
+
 car_types={"gray","green","lambo"}
 
 nextCar=-1
@@ -34,7 +40,7 @@ function update_cars()
 
   -- decide when to add more cars
   nextCar-=1
-  if nextCar<0 then
+  if nextCar<0 and #cars<5 then
     nextCar=30+rnd(200)
     add_car(distance+100,rnd(1.5)-.75,rnd(car_types),0)
   end
@@ -91,7 +97,7 @@ function update_cars()
     end
 
     -- remove cars once they're off screen
-    if car.d < distance-20 then
+    if car.d < distance-20 or car.d > distance+150 then
         del(cars,car)
     end
 end

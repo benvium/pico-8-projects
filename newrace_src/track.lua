@@ -1,16 +1,25 @@
 track2={
-    -- length, turn, items, itemMode, hill
+    -- length, turn, items, itemMode, hill,sfx
+    {25,0,{"person"}},
+    -- {100,0,{"tunnel"}},
+    -- {100,0,{"tree2"},"both"},
     {100,0,{"stand"},"both"},
     {200,0,{"person","tree"},"both"},
-    {150,-.5,{"postLeft","postRight"},"all"},
-    {250,0,{"right","thirty"},"alt"},
+    {50,0,{"right"}},
+    {300,0.8,{"tree","sea"},"leftright",0,6},
+    {100,0,{"tunnel"}},
+    -- {50,0,{"tunnel"},"random",1},
+    -- {50,0,{"tunnel"},"random",0},
+    -- {50,0,{"tunnel"},"random",-1},
+    {100,0,{"tree","tree2","lard"}},
+    {50,0,{"right"}},
+    {200,1,{"lard"},"random",0.5},
     {100,0,{"lard","thirty"}},
-    {100,0,{"left"}},
+    {50,0,{"left"}},
+    {200,-1,{"left"},-0.5},
+    {200,-1,{"tunnel"}},
+    {200,-1,{"tunnel"}},
 }
-
--- add some gems
-addGems(300,20, 0.3, 0, 10)
-addGems(1800,20, -0.3, 0, 10)
 
 -- add up track lengths
 trackLength2=0
@@ -19,6 +28,13 @@ for i=1,#track2 do
 end
 printh("trackLength2:"..trackLength2)
 
+-- add some gems
+addGems(300,20, 0.3, 0, 10)
+addGems(1800,20, -0.3, 0, 10)
+printh("gems:"..gems)
+
+-- returns track info:
+-- {length, turn, items, itemMode, hill}, how far through
 function getTrack2(distance_) 
     local distance=distance_%trackLength2
     local i=1
@@ -26,53 +42,13 @@ function getTrack2(distance_)
     while i<=#track2 do
         total+=track2[i][1]
         if distance<total then
-            return track2[i]
+            return track2[i],distance-(total-track2[i][1])
         end
         i+=1
     end
     return track2[#track2]
 end
 
-
-track={
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    -- 0.3,0.7,0.7,0.7,0.7,0.3,
-    0,
-    -- -0.3,-1,-1,-1,-0.3,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    -- -0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5
-}
-hills={
-    -- 0,
-    -- 0,
-    -- 0,
-    -- 0,
-    -- 0,
-    -- 0,
-    -- 0,
-    -- 0,
-    -- 1,
-    -- 1,
-    -- 1,
-    -- 0,
-    -- -1,
-    -- -1,
-    -- -1,
-}
-tracklength=count(track)
 
 -------------------
 
