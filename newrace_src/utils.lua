@@ -17,7 +17,6 @@ col={
     pint2=15
 }
 
-
 function clone(from)
     local to = {}
     for key, value in pairs(from) do
@@ -36,6 +35,11 @@ function colFromMap(x,y)
     local spritex=(spriteunder%16)*8+(x%8)
     local spritey=flr(spriteunder/16)*8+(y%8)
     return sget(spritex,spritey)
+end
+
+function map_flag(x,y,flag)
+    local fx = fget(mget(flr(flr(x)/8),flr(flr(y)/8)),flag)
+    return fx
 end
 
 function tostring(any)
