@@ -3,7 +3,8 @@ fx={
     land=1,
     grab=2,
     coin=3,
-    die=4
+    die=4,
+    up=5
 }
 
 function _init()
@@ -21,8 +22,11 @@ function _init()
         spr=1,
         w=1,
         h=1,
+        mode="walk",
         jump=nil,
+        jumpx=0,
         wall=false,
+        jumpcooldown=0,
         coyote=0, -- time left to jump after falling
         hitbox={
             x=0,
@@ -35,71 +39,91 @@ function _init()
             canPress[4]=true
           end
 
-          self.spr=psprs.walk
-
           local canFall = can_move(self,0,1)
           local canGoRight = can_move(self,1,0)
           
           if canFall then
             -- cling to wall
-            if not canGoRight then
-                self.spr=psprs.wall
-                self.jump=nil
-                if not self.wall then
+            if not canGoRight  then
+                if self.mode=="jump" then
+                    self.spr=psprs.wall
                     sfx(fx.grab,0)
+                    self.jumpcooldown=4
+                    self.mode="wall"
+                    self.x = flr(self.x/8)*8
                 end
-                self.wall=true
-                self.x = flr(self.x/8)*8
             
-            elseif self.jump==nil and self.coyote<=0 then
+            elseif self.mode=="walk" then
                 -- fall
                 self.jump=1
-                self.spr=psprs.jump
-                self.wall=false
+                self.mode="jump"
             end
-            self.coyote-=1
           else
-            -- end jump/fall
-            if self.jump~=nil then
-                self.jump=nil
+            -- can't fall: end jump/fall
+            if self.mode=="jump" then
+                self.mode="walk"
                 self.y = flr(self.y/8)*8
                 self.coyote=3
+                self.jumpcooldown=10
                 sfx(fx.land,0)
             end
           end
-          -- left
-          if btn(0) then 
-            if can_move(self,-2,0) then
-              self.x-=2
+
+          self.jumpcooldown=max(0,self.jumpcooldown-1)
+
+          -- move lr - on floor, or in air
+          if self.mode~="wall" and self.mode~="walljump" then
+            -- left
+            if btn(0) then 
+                if can_move(self,-2,0) then
+                    self.x-=2
+                elseif can_move(self,-1,0) then
+                    self.x-=1
+                end
+            end
+            -- right
+            if btn(1) then 
+                if can_move(self,2,0) then
+                    self.x+=2
+                elseif can_move(self,1,0) then
+                    self.x+=1
+                end
             end
           end
-          -- right
-          if btn(1) then 
-            if canGoRight then
-              self.x+=2
-            end
-          end
-          -- jump
-          if btn(2) or btn(5) and canPress[4] then
+          -- jump - if on floor or from wall
+          if (btn(2) or btn(5)) and self.jumpcooldown<=0 then
             canPress[4]=false
             -- jump from ground
-            if self.jump==nil then
-                if not canFall or self.wall or self.coyote>0 then 
+            if self.mode~="jump" then
+                if self.mode=="walk" then
+                    self.mode="jump"
                     self.jump=-3
                     sfx(fx.jump,0)
-                    if self.wall then
-                        self.x-=2
-                    end
+                elseif self.mode=="wall" then
+                    self.mode="walljump"
+                    self.jump=-4
                 end
             end
         end
-          if self.jump~=nil then
-            self.spr=psprs.jump
+          if self.mode=="jump" then
+            if self.jump==nil then self.jump=0 end
             if can_move(self,0,self.jump) then
                 self.jump+=0.25
                 self.y+=self.jump
             else
                 self.jump=nil
+                self.mode="walk" -- will then fall
+            end
+          end
+
+          if self.mode=="walljump" then
+            if can_move(self,-0.5,self.jump) then
+                self.jump+=0.25
+                self.y+=self.jump
+                self.x+=-0.5
+            end
+            if self.jump>-2 then
+                self.mode="jump"
             end
           end
 
@@ -118,6 +142,14 @@ function _init()
           if not noCoin then
             mset(vx/8,vy/8,0)
             sfx(fx.coin,0)
+          end
+
+          if self.mode=="walk" then
+            self.spr=psprs.walk
+          elseif self.mode=="jump" then
+            self.spr=psprs.jump
+          elseif self.mode=="wall" then
+            self.spr=psprs.wall
           end
           
         end
@@ -194,4 +226,6 @@ function _draw()
     for ob in all(obs) do
         draw_object(ob)
     end
+    camera(0,0)
+    print(p.mode)
 end
