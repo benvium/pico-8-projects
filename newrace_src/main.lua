@@ -2,8 +2,13 @@
 -- distance around the track
 distance=0
 
+lap=1
+
 -- current player/car
 score=0
+
+starttime=time()
+laptimes={}
 
 --consts
 maxspeed=1.5
@@ -128,6 +133,13 @@ function _update60()
 
     -- move down the track
     distance=distance+speed
+    local newLap=flr(distance/trackLength2)+1
+    if newLap>lap and lap<=5 then
+        laptimes[lap]=time()-starttime
+        starttime=time()
+        lap=newLap
+        sfx(7,3)
+    end
 
     -- interpolate between turns
     -- local trackidx=flr(distance/100)

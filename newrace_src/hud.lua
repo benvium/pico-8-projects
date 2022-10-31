@@ -1,4 +1,6 @@
 local speedow=30
+local debug=false
+
 function draw_hud()
 
     -- speedo
@@ -7,7 +9,13 @@ function draw_hud()
     rectfill(7, 7, 7+speed/maxspeed*(speedow-2),10,col.red2)
     rect(7, 7, 7+speed/maxspeed*(speedow-2),10,col.red1)
 
-    print(score.." / "..gems, 64,2,col.white)
+    spr(1,100-11,5,1,1)
+    print(score.." / "..gems, 100,6,col.white)
+
+    spr(122,64-20,5,1,1,true)
+    spr(121,64-12,5,1,1)
+    spr(115+lap,64-4,5,1,1)
+    spr(122,64+4,5,1,1)
 
     -- 
     local t=getTrack2(distance)
@@ -29,9 +37,15 @@ function draw_hud()
 
     end
 
-    print("obs:"..#obs,col.black)
-    print("cars:"..#cars,col.black)
-    print("pts:"..#pts,col.black)
-    print("distance: "..flr(distance%trackLength2).."/"..trackLength2, col.black)
-    print("through: "..flr(through),col.black)
+    for tm in all(laptimes) do
+        print(flr(tm)..":"..flr(tm*100)-100*flr(tm),col.black)
+    end
+
+    if debug then
+        print("obs:"..#obs,col.black)
+        print("cars:"..#cars,col.black)
+        print("pts:"..#pts,col.black)
+        print("distance: "..flr(distance%trackLength2).."/"..trackLength2, col.black)
+        print("through: "..flr(through),col.black)
+    end
 end
