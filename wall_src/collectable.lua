@@ -38,6 +38,8 @@ collectable={
                 print("ultra meat!", bx+1, by+1, col.grey1)
                 print("ultra meat!", bx+2, by+2, col.white)
                 camera(cx,cy)
+                p.powerup="ultrameat"
+                p.poweruptime=600
             else
                 spr(16,self.x,self.y)
             end

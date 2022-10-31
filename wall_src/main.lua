@@ -10,6 +10,8 @@ fx={
     fanfare=8
 }
 
+default_walkspeed=1
+
 function _init()
     -- force reload map
     reload(0x1000, 0x1000, 0x2000)
@@ -29,11 +31,14 @@ function _init()
         w=1,
         h=1,
         mode="walk",
+        walkspeed=1,
         jump=nil,
         jumpx=0,
         flipx=false,
         wall=false,
         phase=0,
+        powerup=nil, -- e.g. ultrameat
+        poweruptime=0,
         jumpcooldown=0,
         coyote=0, -- time left to jump after falling
         hitbox={
@@ -42,7 +47,35 @@ function _init()
             w=7,
             h=7
         },
+        draw=function(self)
+            if self.powerup=="ultrameat" then
+                if flr(self.poweruptime)%2==0 then
+                    pal(col.white, col.red2)
+                    pal(col.grey2, col.red2)
+                else
+                    pal(col.white, col.black)
+                    pal(col.grey2, col.black)
+                end
+            end
+            spr(self.spr,self.x,self.y,1,1,self.flipx)
+            pal()
+        end,
         update=function(self) 
+
+            local invincible=self.powerup=="ultrameat"
+            local walkspeed = default_walkspeed
+            
+            
+        -- leave flames..!
+        if invincible then
+            self.poweruptime-=1
+            if self.poweruptime<0 then
+                self.powerup=nil
+            end
+            particle_add_at_ob(self,col.red2,"fire")
+            walkspeed*=2
+        end
+
           if not btn(4) then
             canPress[4]=true
           end
@@ -120,7 +153,6 @@ function _init()
           -- move lr - on floor, or in air
           if self.mode~="walljump" then
             local moved=false
-            local walkspeed=1
             -- left
             if btn(0) then 
                 if can_move(self,-walkspeed,0) then
@@ -414,8 +446,11 @@ end
 
 function baddieCollide(self,t)
     if p.mode=="dead" then return end
+
+    local invincible=p.powerup=="ultrameat"
+
     if collide(self,p) then
-        if ((self.y-p.y)>3) and self.killable then
+        if (((self.y-p.y)>3) and self.killable) or invincible then
             sfx(fx.kill,0)
             del(obs,self) 
             for i=1,5 do
@@ -437,8 +472,10 @@ function baddieCollide(self,t)
                     end
                 end
             })
-            p.mode="jump"
-            p.jump=-3
+            if not invincible then
+                p.mode="jump"
+                p.jump=-3
+            end
         else
             if p.mode~="dead" then
                 sfx(fx.die,0)
