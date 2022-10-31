@@ -26,11 +26,11 @@ function home_draw()
 
     rectfill(0, 15, 128, 16+6, col.blue1)
     cursor(33,16)
-    print("r a c e  g a m e", col.blue2)
+    print("r e d  r a c e r", col.blue2)
     cursor(31,16)
-    print("r a c e  g a m e", col.grey1)
+    print("r e d  r a c e r", col.grey1)
     cursor(32,16)
-    print("r a c e  g a m e", col.white)
+    print("r e d  r a c e r", col.white)
     cursor(32,32)
     print("press X to start", col.white)
 end
@@ -42,14 +42,6 @@ function end_init()
     sfx(-1,2)
     sfx(-1,3)
     sfx(25)
-    -- -- temp
-    -- laptimes={
-    --     12.12,
-    --     23.23,
-    --     14.13,
-    --     22.44,
-    --     11.04
-    -- }
 end
 
 local btnPressed=false
@@ -71,11 +63,11 @@ function end_draw()
 
     rectfill(0, 15, 128, 16+6, col.blue1)
     cursor(33,16)
-    print("r a c e  g a m e", col.blue2)
+    print("r e d  r a c e r", col.blue2)
     cursor(31,16)
-    print("r a c e  g a m e", col.grey1)
+    print("r e d  r a c e r", col.grey1)
     cursor(32,16)
-    print("r a c e  g a m e", col.white)
+    print("r e d  r a c e r", col.white)
 
     
     for i=1,#laptimes do

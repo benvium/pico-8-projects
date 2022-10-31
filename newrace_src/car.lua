@@ -41,7 +41,7 @@ function update_cars()
   -- decide when to add more cars
   nextCar-=1
   if nextCar<0 and #cars<5 then
-    nextCar=30+rnd(200)
+    nextCar=30+rnd(400)
     add_car(distance+100,rnd(1.5)-.75,rnd(car_types),0)
   end
 

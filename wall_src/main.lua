@@ -207,11 +207,13 @@ function _init()
                 if self.mode=="walk" then
                     self.mode="jump"
                     self.jump=-4
-                    sfx(fx.jump,0)
+                    sfx(fx.jump,1)
                 elseif self.mode=="wall" then
                     self.mode="walljump"
                     self.jump=-4
+                    sfx(fx.jump,1)
                 end
+            
             end
         end
           if self.mode=="jump" then

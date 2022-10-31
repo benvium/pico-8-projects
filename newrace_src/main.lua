@@ -58,14 +58,13 @@ function _update60()
             dx=0
         end
         if btn(5) then
-            -- temporary debug warp speed!
             speed=min(maxspeed,speed+acceleration)
         else
             speed=max(0,speed-0.01)
         end
-        if btn(4) then
-            speed=maxspeed*2
-        end
+        -- if btn(4) then
+        --     speed=maxspeed*2
+        -- end
 
         
         -- throw off sides during turns
