@@ -2,18 +2,22 @@ track2={
     -- length, turn, items, itemMode, hill,sfx
     {25,0,{"person"},"both",0,8},
     {100,0,{"stand"},"both",0,8},
-    {200,0,{"person","tree"},"both"},
+    {100,0,{"person","tree"},"both"},
+    {100,0,{"person","tree"},"both",1},
+    {100,0,{"person","tree"},"both",1},
     {50,0,{"right"}},
-    {300,0.8,{"tree","sea"},"leftright",0,6},
+    {200,0.8,{"right","sea"},"leftright",0,6},
+    {200,0.8,{"tree","sea"},"leftright",0,6},
     {100,0,{"tunnel"}},
     {100,0,{"tree","tree2","lard"}},
-    {50,0,{"right"}},
-    {200,1,{"tree","tree2","lard"},"random",0.5},
+    {50,0,{"right","tree2"},"leftright"},
+    {200,1,{"right","tree2"},"leftright",0.5},
     {100,0,{"","thirty"}},
     {50,0,{"left"}},
-    {200,-1,{"left"},-0.5},
-    {200,-1,{"tunnel"}},
-    {200,-1,{"tunnel"}},
+    {200,-1,{"tree2","left"},"leftright",-0.5},
+    {200,-.7,{"tunnel"}},
+    {200,-.7,{"tunnel"}},
+    {100,0,{"tree"}},
 }
 
 -- add up track lengths
@@ -24,8 +28,8 @@ end
 printh("trackLength2:"..trackLength2)
 
 -- add some gems
-addGems(300,20, 0.3, 0, 10)
-addGems(1800,20, -0.3, 0, 10)
+addGems(300,20, -0.3, 0.1, 10)
+addGems(1200,20, -0.3, 0.1, 10)
 printh("gems:"..gems)
 
 -- returns track info:
