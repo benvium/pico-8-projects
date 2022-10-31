@@ -7,7 +7,7 @@ fx={
     up=5,
     thump=6,
     kill=7,
-    
+    fanfare=8
 }
 
 function _init()
@@ -65,7 +65,7 @@ function _init()
                 if self.mode=="jump" then
                     self.spr=psprs.wall
                     sfx(fx.land,0)
-                    self.jumpcooldown=4
+                    self.jumpcooldown=0
                     self.mode="wall"
                     self.flipx=false
                     self.x = flr(self.x/8)*8
@@ -120,13 +120,14 @@ function _init()
           -- move lr - on floor, or in air
           if self.mode~="walljump" then
             local moved=false
+            local walkspeed=1
             -- left
             if btn(0) then 
-                if can_move(self,-2,0) then
-                    self.x-=2
+                if can_move(self,-walkspeed,0) then
+                    self.x-=walkspeed
                     moved=true
-                elseif can_move(self,-1,0) then
-                    self.x-=1
+                elseif can_move(self,-walkspeed/2,0) then
+                    self.x-=walkspeed/2
                     moved=true
                 end
                 if self.mode=="wall" and moved then
@@ -140,13 +141,14 @@ function _init()
                     self.x=cam[1]
                 end
             end
+            
             -- right
             if btn(1) then 
-                if can_move(self,2,0) then
-                    self.x+=2
+                if can_move(self,walkspeed,0) then
+                    self.x+=walkspeed
                     moved=true
-                elseif can_move(self,1,0) then
-                    self.x+=1
+                elseif can_move(self,walkspeed/2,0) then
+                    self.x+=walkspeed/2
                     moved=true
                 else
                     self.mode="wall"
@@ -157,7 +159,7 @@ function _init()
                 end
             end
             if moved then
-                self.phase=(self.phase+1)%30+1
+                self.phase=(self.phase+1)%30
                 -- if self.phase%10==0 then
                 --     sfx(fx.walk,0)
                 -- end
@@ -172,7 +174,7 @@ function _init()
             if self.mode~="jump" then
                 if self.mode=="walk" then
                     self.mode="jump"
-                    self.jump=-3
+                    self.jump=-4
                     sfx(fx.jump,0)
                 elseif self.mode=="wall" then
                     self.mode="walljump"
@@ -183,7 +185,7 @@ function _init()
           if self.mode=="jump" then
             if self.jump==nil then self.jump=0 end
             if can_move(self,0,self.jump) then
-                self.jump=min(2, self.jump+0.25)
+                self.jump=min(3, self.jump+0.25)
                 self.y+=self.jump
             else
                 self.jump=nil
@@ -280,7 +282,8 @@ function _init()
                 if info~=nil then 
                     -- remove tile
                     mset(x,y,0)
-                    add(obs,{
+
+                    local ob = {
                         x=x*8,
                         y=y*8,
                         spr=t,
@@ -311,7 +314,15 @@ function _init()
 
                             --baddieCollide(self,t)
                         end
-                    })
+                    }
+                    -- copy over any extra info from the definition
+                    if info.draw~=nil then
+                        ob.draw=info.draw
+                    end
+                    if info.frames~=nil then
+                        ob.frames=info.frames
+                    end
+                    add(obs,ob)
                 end
             end
 
@@ -402,10 +413,17 @@ function _init()
 end
 
 function baddieCollide(self,t)
+    if p.mode=="dead" then return end
     if collide(self,p) then
         if ((self.y-p.y)>3) and self.killable then
             sfx(fx.kill,0)
             del(obs,self) 
+            for i=1,5 do
+                particle_add_at_ob(self,col.green2)
+                particle_add_at_ob(self,col.green1)
+                particle_add_at_ob(self,col.brown)
+            end
+            -- add 'squashed' version and animate downwards
             add(obs,{
                 x=self.x,
                 y=self.y,
@@ -424,42 +442,16 @@ function baddieCollide(self,t)
         else
             if p.mode~="dead" then
                 sfx(fx.die,0)
+                for i=1,10 do
+                    particle_add_at_ob(self,col.red1)
+                    particle_add_at_ob(self,col.red2)
+                    particle_add_at_ob(self,col.brown)
+                end
                 p.mode="dead"
             end
         end
 
     end
-end
-
-function collide(a, b)
-    return intersects({
-        x=a.x+a.hitbox.x,
-        y=a.y+a.hitbox.y,
-        w=a.hitbox.w,
-        h=a.hitbox.h
-    },{
-        x=b.x+b.hitbox.x,
-        y=b.y+b.hitbox.y,
-        w=b.hitbox.w,
-        h=b.hitbox.h
-    })
-end
-
-function intersects(a, b)
-    local rectA={
-        left=a.x,
-        right=a.x+a.w,
-        top=a.y,
-        bottom=a.y+a.h
-    }
-    local rectB={
-        left=b.x,
-        right=b.x+b.w,
-        top=b.y,
-        bottom=b.y+b.h
-    }
-    return max(rectA.left, rectB.left) < min(rectA.right, rectB.right)
-    and max(rectA.top, rectB.top) < min(rectA.bottom, rectB.bottom);
 end
 
 psprs={
@@ -470,56 +462,25 @@ psprs={
     dead=49
 }
 
-function can_move(ob,dx,dy,flag)
-    if flag==nil then flag=0 end
-    local newx=ob.x+ob.hitbox.x+dx
-    local newy=ob.y+ob.hitbox.y+dy
-    local vx,vy
-    vx=newx+ob.hitbox.w/2
-    vy=newy+ob.hitbox.h
-    local b=map_flag(vx,vy,flag)
-    if b then return false,vx,vy end
-    vx=newx
-    vy=newy+ob.hitbox.h
-    local bl=map_flag(vx,vy,flag)
-    if bl then return false,vx,vy end
-    vx=newx+ob.hitbox.w
-    vy=newy+ob.hitbox.h
-    local br=map_flag(vx,vy,flag)
-    if br then return false,vx,vy end
-    vx=newx+ob.hitbox.w/2
-    vy=newy
-    local t=map_flag(vx,vy,flag)
-    if t then return false,vx,vy end
-    vx=newx
-    vy=newy
-    local tl=map_flag(vx,vy,flag)
-    if tl then return false,vx,vy end
-    vx=newx+ob.hitbox.w
-    vy=newy
-    local tr=map_flag(vx,vy,flag)
-    if tr then return false,vx,vy end
-    vx=newx
-    vy=newy+ob.hitbox.h/2
-    local l=map_flag(vx,vy,flag)
-    if l then return false,vx,vy end
-    vx=newx+ob.hitbox.w
-    vy=newy+ob.hitbox.h/2
-    local r=map_flag(vx,vy,flag)
-    if r then return false,vx,vy end
-    
-    return true
-end
 
 function draw_object(ob)
-    spr(ob.spr,ob.x,ob.y,ob.w,ob.h,ob.flipx,ob.flipy)
+    local isOnScreen=(ob.x+ob.h*8)>=cam[1] and ob.x<=cam[1]+128
+    if not isOnScreen then return end
+
+    -- custom draw function?
+    if ob.draw then
+        ob:draw(ob)
+    elseif ob.spr then
+        spr(ob.spr,ob.x,ob.y,ob.w,ob.h,ob.flipx,ob.flipy)
+    end
 end
 
 function _update60()
     for ob in all(obs) do
         ob:update()
     end
-    -- cam[1]+=0.25
+    
+    -- move camera to follow player
     if p.x>cam[1]+64 then
         cam[1]=p.x-64
     end
@@ -528,14 +489,25 @@ end
 function _draw()
     cls()
     camera(0,0)
-    map(flr(cam[1]/2/8),16,8-(cam[1]/2)%8-8,0,17,16)
+
+    --background parallax
+    local bgw=16
+    local bgtilex=flr(cam[1]/2/8)%bgw
+    local bgoffsetx=8-(cam[1]/2)%8-8
+    local bgtilew=bgw-bgtilex
+    map(bgtilex,16,bgoffsetx,0,bgtilew,16)
+    -- draw wrapped-around background
+    map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
+
+    -- level
     map(flr(cam[1]/8),0,8-cam[1]%8-8,0,17,16)
     camera(cam[1],0)
     for ob in all(obs) do
         draw_object(ob)
     end
     camera(0,0)
-    print(p.mode)
-    print(p.phase)
-    print(walkframe)
+    -- print(p.mode)
+    -- print(p.phase)
+    -- print(walkframe)
+    -- print("obs:"..#obs)
 end

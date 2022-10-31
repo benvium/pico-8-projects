@@ -1,11 +1,55 @@
 collectable={
+    -- ultra meat
+    [16]={
+        update=function(self)
+            if self.mode=="collect" then return end
+            if self.phase==nil then
+                self.phase=rnd(60)
+            end
+            self.phase=(self.phase+1)%60
+            local y=sin(self.phase/60)*0.5
+            self.y+=y
+
+
+            if collide(self,p) then
+                self.mode="collect"
+                sfx(fx.fanfare,1)
+                self.collect=100
+                for i=1,2 do
+                    particle_add_at_ob(
+                        self,
+                        col.white)
+                end
+            end
+        end,
+        draw=function(self)
+            if self.mode=="collect" then
+                self.collect-=1
+                self.y-=1
+                if self.collect<=0 then
+                    del(obs,self)
+                end
+
+                local cx,cy=camera(0,0)
+                local by=32
+                local bx=64-self.collect/2
+                rectfill(0, by-2, 128, by+10, col.blue1)
+                print("ultra meat!", bx, by, col.black)
+                print("ultra meat!", bx+1, by+1, col.grey1)
+                print("ultra meat!", bx+2, by+2, col.white)
+                camera(cx,cy)
+            else
+                spr(16,self.x,self.y)
+            end
+        end
+    },
     -- coin
     [64]={
         phase=0,
         frames={64,65,66,65},
         update=function(self)
             if self.mode==nil then self.mode="idle" end
-            local frames=collectable[64].frames
+            local frames=self.frames
             if self.phase==nil then self.phase=0 end
             self.phase = (self.phase+1)%(#frames*5)
             self.spr = frames[flr(self.phase/5)+1]
@@ -16,8 +60,11 @@ collectable={
                     self.mode="collect"
                     sfx(fx.coin,1)
                     self.collect=20
-                    -- self.dead=true
-                    -- player.coins+=1
+                    for i=1,2 do
+                        particle_add_at_ob(
+                            self,
+                            col.white)
+                    end
                 end
             elseif self.mode=="collect" then
                 self.collect-=1

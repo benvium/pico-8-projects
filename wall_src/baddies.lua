@@ -32,6 +32,26 @@ baddies={
             end
         end
     },
+    -- munch plant
+    [24]={
+        killable=true,
+        update=function(self)
+            if p.mode=="dead" then
+                return
+            end
+
+            local dx=p.x-self.x
+            local dy=p.y-self.y
+            local dist=sqrt(dx*dx+dy*dy)
+            self.spr=24
+            if dist < 32 then
+                if can_move(self,dx/20,0) then
+                    self.x+=dx/30
+                    self.spr=41
+                end
+            end
+        end
+    },
     -- thwomp
     [9]={
         killable=false,
@@ -50,13 +70,12 @@ baddies={
                     self.dy=1
                 end
             elseif self.mode=="down" then
-                -- self.y+=1
                 if can_move(self,0,self.dy) then
                     self.y+=self.dy
-                    self.dy+=0.25
+                    self.dy+=min(2,0.25)
                 else
-                    if can_move(self,0,self.dy/2) then
-                        self.y+=self.dy/2
+                    if can_move(self,0,1) then
+                        self.y+=1
                     end
                     sfx(fx.thump,1)
                     self.y=flr(self.y/8)*8
