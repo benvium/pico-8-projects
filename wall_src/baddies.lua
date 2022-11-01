@@ -52,6 +52,23 @@ baddies={
             end
         end
     },
+    -- bullet bills
+    [3]={
+        killable=true,
+        update=function(self)
+            if self.phase==nil then
+                self.phase=0
+                sfx(fx.gun,1)
+            end
+            self.phase=(self.phase+1)%10
+            self.x-=1
+            self.y=self.y+(sin((self.x-cam[1])/128)/4)
+
+            if self.phase==0 then
+                particle_add_at_ob(self, col.white, "smoke")
+            end
+        end
+    },
     -- thwomp
     [9]={
         killable=false,

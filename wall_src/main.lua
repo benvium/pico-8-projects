@@ -7,7 +7,8 @@ fx={
     up=5,
     thump=6,
     kill=7,
-    fanfare=8
+    fanfare=8,
+    gun=9
 }
 
 default_walkspeed=1
@@ -39,7 +40,6 @@ function _init()
         phase=0,
         powerup=nil, -- e.g. ultrameat
         poweruptime=0,
-        jumpcooldown=0,
         coyote=0, -- time left to jump after falling
         hitbox={
             x=0,
@@ -72,7 +72,6 @@ function _init()
             if self.poweruptime<0 then
                 self.powerup=nil
             end
-            particle_add_at_ob(self,col.red2,"fire")
             walkspeed*=2
         end
 
@@ -98,7 +97,6 @@ function _init()
                 if self.mode=="jump" then
                     self.spr=psprs.wall
                     sfx(fx.land,0)
-                    self.jumpcooldown=0
                     self.mode="wall"
                     self.flipx=false
                     self.x = flr(self.x/8)*8
@@ -115,7 +113,6 @@ function _init()
                 self.mode="walk"
                 self.y = flr(self.y/8)*8
                 self.coyote=3
-                self.jumpcooldown=10
                 sfx(fx.land,0)
             end
           end
@@ -147,8 +144,6 @@ function _init()
             end
             
           end
-
-          self.jumpcooldown=max(0,self.jumpcooldown-1)
 
           -- move lr - on floor, or in air
           if self.mode~="walljump" then
@@ -200,7 +195,7 @@ function _init()
             end
           end
           -- jump - if on floor or from wall
-          if btn(5) and self.jumpcooldown<=0 then
+          if btn(5) then
             canPress[4]=false
             -- jump from ground
             if self.mode~="jump" then

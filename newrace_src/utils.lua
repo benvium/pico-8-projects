@@ -44,7 +44,7 @@ end
 
 function tostring(any)
     if type(any)=="function" then 
-        return "function" 
+        return "fn" 
     end
     if any==nil then 
         return "nil" 
@@ -57,9 +57,9 @@ function tostring(any)
         return "false"
     end
     if type(any)=="table" then
-        local str = "{ "
+        local str = "{"
         for k,v in pairs(any) do
-            str=str..tostring(k).."->"..tostring(v).." "
+            str=str..tostring(k).."="..tostring(v)..",\n"
         end
         return str.."}"
     end
