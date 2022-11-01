@@ -16,6 +16,11 @@ function add_car(distance, x, type)
     if type=="green" then
         car.sprx=96
         car.spry=32
+    elseif type=="blue" then
+        car.sprx=96
+        car.spry=96
+        car.w=4
+        car.h=4
     elseif type=="lambo" then
         car.sprx=0
         car.spry=64
@@ -27,12 +32,12 @@ function add_car(distance, x, type)
 end
 
 function cars_init()
-    add_car(20,-.5,"green")
+    add_car(20,-.5,"blue")
     add_car(20,.5,"lambo")
     add_car(40,0,"gray")
 end
 
-car_types={"gray","green","lambo"}
+car_types={"gray","green","lambo","blue"}
 
 nextCar=-1
 

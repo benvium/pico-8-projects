@@ -14,6 +14,7 @@ fx={
 default_walkspeed=1
 
 function _init()
+    mode="game"
     -- force reload map
     reload(0x1000, 0x1000, 0x2000)
     -- used to force you to let go of button 
@@ -510,38 +511,46 @@ function draw_object(ob)
 end
 
 function _update60()
-    for ob in all(obs) do
-        ob:update()
-    end
-    
-    -- move camera to follow player
-    if p.x>cam[1]+64 then
-        cam[1]=p.x-64
+    if mode=="game" then
+        for ob in all(obs) do
+            ob:update()
+        end
+        
+        -- move camera to follow player
+        if p.x>cam[1]+64 then
+            cam[1]=p.x-64
+        end
+    elseif mode=="end" then
+        end_update()
     end
 end
 
 function _draw()
-    cls()
-    camera(0,0)
+    if mode=="game" then
+        cls()
+        camera(0,0)
 
-    --background parallax
-    local bgw=16
-    local bgtilex=flr(cam[1]/2/8)%bgw
-    local bgoffsetx=8-(cam[1]/2)%8-8
-    local bgtilew=bgw-bgtilex
-    map(bgtilex,16,bgoffsetx,0,bgtilew,16)
-    -- draw wrapped-around background
-    map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
+        --background parallax
+        local bgw=16
+        local bgtilex=flr(cam[1]/2/8)%bgw
+        local bgoffsetx=8-(cam[1]/2)%8-8
+        local bgtilew=bgw-bgtilex
+        map(bgtilex,16,bgoffsetx,0,bgtilew,16)
+        -- draw wrapped-around background
+        map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
 
-    -- level
-    map(flr(cam[1]/8),0,8-cam[1]%8-8,0,17,16)
-    camera(cam[1],0)
-    for ob in all(obs) do
-        draw_object(ob)
+        -- level
+        map(flr(cam[1]/8),0,8-cam[1]%8-8,0,17,16)
+        camera(cam[1],0)
+        for ob in all(obs) do
+            draw_object(ob)
+        end
+        camera(0,0)
+        -- print(p.mode)
+        -- print(p.phase)
+        -- print(walkframe)
+        -- print("obs:"..#obs)
+    elseif mode=="end" then
+        end_draw()
     end
-    camera(0,0)
-    -- print(p.mode)
-    -- print(p.phase)
-    -- print(walkframe)
-    -- print("obs:"..#obs)
 end

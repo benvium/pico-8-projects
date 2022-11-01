@@ -1,4 +1,16 @@
+local trophy={
+    update=function(self) 
+
+        if collide(self,p) then
+            mode="end"
+            end_init()
+        end
+    end
+}
+
 collectable={
+    [160]=trophy,
+    [176]=trophy,
     -- ultra meat
     [16]={
         update=function(self)

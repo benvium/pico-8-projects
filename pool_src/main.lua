@@ -194,88 +194,43 @@ end
 
 function ball_update()
     for ball in all(obs) do
-        if ball.speed>0.01 then
+        ball.collide=false
+
+        if ball.speed<0.01 then
+            ball.speed=0
+        else
+            local orig_pos={x=ball.pos.x,y=ball.pos.y}
             ball.pos.x=ball.pos.x+ball.dir.x*ball.speed
             ball.pos.y=ball.pos.y+ball.dir.y*ball.speed
 
             ball.speed = max(0,ball.speed-0.005)
-            -- friction
-            ball.collide=false
 
-            -- -- check for collision with all other balls
+            -- check for collision with all other balls
             for ball2 in all(obs) do
+                -- only one collision at a time WIP
+                if ball2.collide then break end
+
                 -- don't collide with yourself!
                 if ball2~=ball then 
 
                     if circle_collide_circle(ball,ball2) then
+                        ball.collide=true
 
-                        sfx(0)
-                        
-                        -- collision!
-
-                        -- undo movement until we're no longer colliding
-                        local f=1/8
-                        while circle_collide_circle(ball,ball2) do
-                            ball.pos.x=ball.pos.x-ball.dir.x*ball.speed*f
-                            ball.pos.y=ball.pos.y-ball.dir.y*ball.speed*f  
-                        end
-
-
-                        -- stop current ball
                         -- transfer speed to other ball
                         ball2.speed = ball.speed*0.8
                         ball.speed=ball.speed*0.2
-                        -- ball2.speed = ball.speed
-                        -- ball.speed=0
 
                         -- direction is unitvec between balls
                         ball2.dir=v_normalize(v_subv(ball2.pos,ball.pos))
-                        -- todo ensure balls can't go 'inside' each other
-                        -- 'reverse' the hitter 
-                        -- ball2.pos=v_addv(ball2.pos,v_mults(ball2.dir,ball2.r+ball.r))
-                        -- ball.collide=true
                     end
                 end
             end
 
-            -- -- check for collision with edge of screen
-            -- if ball.pos.y<ball.r then
-            --     ball.pos.y=ball.r
-            --     -- hit top
-            --     ball.dir=v_reflect(ball.dir,{x=0,y=-1})
-            -- end
-            -- if ball.pos.y>127-ball.r then
-            --     ball.pos.y=127-ball.r
-            --     -- hit bottom
-            --     ball.dir=v_reflect(ball.dir,{x=0,y=1})
-            -- end
-            -- if ball.pos.x<ball.r then
-            --     ball.pos.x=ball.r
-            --     -- hit left
-            --     ball.dir=v_reflect(ball.dir,{x=-1,y=0})
-            -- end
-            -- if ball.pos.x>127-ball.r then
-            --     ball.pos.x=127-ball.r
-            --     -- hit right
-            --     ball.dir=v_reflect(ball.dir,{x=1,y=0})
-            -- end
-
             -- check for collision with lines
             for line in all(lines) do
-                -- todo move gradually towards line - else small balls fast can
-                -- jump right past them
-        
-
                 if circle_collide_line_segment(ball,line.p1,line.p2) then
-                    sfx(1)
-
-                    -- undo movement until we're no longer colliding
-                    local f=1/8
-                    while (circle_collide_line_segment(ball,line.p1,line.p2)) do
-                        ball.pos.x=ball.pos.x-ball.dir.x*ball.speed*f
-                        ball.pos.y=ball.pos.y-ball.dir.y*ball.speed*f  
-                    end
-
+                    ball.collide=true
+                    
                     -- find normal of line in the direction of the ball
                     local lineUnit = v_normalize(v_subv(line.p2,line.p1))                   
                     local normal1 = {x=lineUnit.y,y=-lineUnit.x}
@@ -287,40 +242,15 @@ function ball_update()
                     end
                     
                     ball.dir=v_reflect(ball.dir,normal1)
-                    -- break
                 end
             end
-        end
-    end
-end
--- temp
-function single_ball_collide_lines(ball)
-    newDir=nil
-    foo=nil
-    for line in all(lines) do
-        local a,foo = circle_collide_line_segment(ball,line.p1,line.p2)
-        if a then
-            sfx(1)
 
-            -- -- undo movement until we're no longer colliding
-            -- local f=1/8
-            -- while (circle_collide_line_segment(ball,line.p1,line.p2)) do
-            --     ball.pos.x=ball.pos.x-ball.dir.x*ball.speed*f
-            --     ball.pos.y=ball.pos.y-ball.dir.y*ball.speed*f  
-            -- end
+            if ball.collide then
+                sfx(1)
 
-            -- find normal of line in the direction of the ball
-            local lineUnit = v_normalize(v_subv(line.p2,line.p1))                   
-            local normal1 = {x=lineUnit.y,y=-lineUnit.x}
-            local normal2= {x=-lineUnit.y,y=lineUnit.x}
-
-            -- if the ball is moving towards the normal, use the other normal
-            if v_dot(ball.dir,normal1)<0 then
-                normal1=normal2
+                -- put ball back where it was
+                ball.pos=orig_pos
             end
-            
-            newDir = normal1-- v_reflect(ball.dir,normal1)
-            -- break
         end
     end
 end
@@ -331,31 +261,38 @@ function _update60()
     if btn(0) then
         obs[1].pos.x-=1
         obs[1].speed=0
-        single_ball_collide_lines(obs[1])
     end
     if btn(1) then
         obs[1].pos.x+=1
         obs[1].speed=0
-        single_ball_collide_lines(obs[1])
     end
     if btn(2) then
         obs[1].pos.y-=1
         obs[1].speed=0
-        single_ball_collide_lines(obs[1])
     end
     if btn(3) then
         obs[1].pos.y+=1
         obs[1].speed=0
-        single_ball_collide_lines(obs[1])
     end
 
     if btn(4) then
-        -- local other = rnd(obs)
-        -- while other==obs[1] do
-        --     other = rnd(obs)
-        -- end
+
+        local ball=obs[1]
+        local canMove=true
+        -- only move if not INSIDE another ball
+        for ball2 in all(obs) do
+            -- don't collide with yourself!
+            if ball2~=ball then 
+                if circle_collide_circle(ball,ball2) then
+                    canMove=false
+                    break
+                end
+            end
+        end
+
+        if not canMove then return end
         -- make first ball go towards second
-        move_towards(obs[1],obs[2] ,7)
+        move_towards(ball,obs[4] ,7)
     end
 end
 
