@@ -13,7 +13,11 @@ fx={
 
 default_walkspeed=1
 
+current_level=2
+
 function _init()
+    level=levels[current_level]
+
     mode="game"
     -- force reload map
     reload(0x1000, 0x1000, 0x2000)
@@ -28,7 +32,7 @@ function _init()
     -- player setup
     p = {
         x=8,
-        y=10,
+        y=10+level.tiley*8,
         spr=1,
         w=1,
         h=1,
@@ -83,9 +87,10 @@ function _init()
           if self.mode=="dead" then
             self.y+=1
             self.spr=psprs.dead
-            if self.y>128 then
-                _init()
-            end
+          end
+
+          if self.y>128+level.tiley*8 then
+            _init()
             return
           end
 
@@ -198,8 +203,12 @@ function _init()
           -- jump - if on floor or from wall
           if btn(5) then
             canPress[4]=false
+
             -- jump from ground
-            if self.mode~="jump" then
+            if self.mode~="jump" 
+            and can_move(self,0,-2,0) 
+            and self.y>2
+            then
                 if self.mode=="walk" then
                     self.mode="jump"
                     self.jump=-4
@@ -237,13 +246,6 @@ function _init()
             end
           end
 
-          -- collect
-          local noCoin,vx,vy=can_move(self,0,0,2)
-          if not noCoin then
-            mset(vx/8,vy/8,0)
-            sfx(fx.coin,0)
-          end
-
           if self.mode=="walk" then
             walkframe=flr((self.phase/30)*(#psprs.walk))+1
             self.spr=psprs.walk[walkframe]
@@ -251,6 +253,11 @@ function _init()
             self.spr=psprs.jump
           elseif self.mode=="wall" then
             self.spr=psprs.wall
+          end
+
+          -- dont allow going off top of screen
+          if self.y<0 then
+            self.y=0
           end
         end
     }
@@ -260,7 +267,7 @@ function _init()
 
       -- replace baddie map tiles with sprites
       for x=0,128 do
-        for y=0,15 do
+        for y=level.tiley,level.tiley+15 do
             local t=mget(x,y)
             -- flag 3 means baddie
             local f=fget(t,3)
@@ -442,6 +449,18 @@ function _init()
     end
 end
 
+function player_kill()
+    if p.mode~="dead" then
+        sfx(fx.die,0)
+        for i=1,10 do
+            particle_add_at_ob(p,col.red1)
+            particle_add_at_ob(p,col.red2)
+            particle_add_at_ob(p,col.brown)
+        end
+        p.mode="dead"
+    end
+end
+
 function baddieCollide(self,t)
     if p.mode=="dead" then return end
 
@@ -475,15 +494,7 @@ function baddieCollide(self,t)
                 p.jump=-3
             end
         else
-            if p.mode~="dead" then
-                sfx(fx.die,0)
-                for i=1,10 do
-                    particle_add_at_ob(self,col.red1)
-                    particle_add_at_ob(self,col.red2)
-                    particle_add_at_ob(self,col.brown)
-                end
-                p.mode="dead"
-            end
+            player_kill()
         end
 
     end
@@ -531,17 +542,19 @@ function _draw()
         camera(0,0)
 
         --background parallax
+        local bgorigintilex=level.bgtilex
         local bgw=16
         local bgtilex=flr(cam[1]/2/8)%bgw
         local bgoffsetx=8-(cam[1]/2)%8-8
         local bgtilew=bgw-bgtilex
-        map(bgtilex,16,bgoffsetx,0,bgtilew,16)
+        map(bgorigintilex+bgtilex,16,bgoffsetx,0,bgtilew,16)
         -- draw wrapped-around background
-        map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
+        map(bgorigintilex,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
 
         -- level
-        map(flr(cam[1]/8),0,8-cam[1]%8-8,0,17,16)
-        camera(cam[1],0)
+        map(flr(cam[1]/8),level.tiley,8-cam[1]%8-8,0,17,16)
+
+        camera(cam[1],level.tiley*8)
         for ob in all(obs) do
             draw_object(ob)
         end

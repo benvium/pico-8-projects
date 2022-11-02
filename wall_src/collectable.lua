@@ -9,8 +9,33 @@ local trophy={
 }
 
 collectable={
-    [160]=trophy,
-    [176]=trophy,
+    -- spike
+    [81]={
+        update=function(self)
+            if collide(self,p) then
+                player_kill()
+            end
+        end
+    },
+    -- trampoline
+    [82]={
+        update=function(self)
+            if self.orig_y==nil then
+                self.orig_y=self.y
+            end
+            if collide(self,p) and p.y<self.y then
+                sfx(fx.jump)
+                p.mode="jump"
+                p.jump=-7
+                self.y=self.orig_y+4
+            end
+            if self.y>self.orig_y then
+                self.y-=0.25
+            end
+        end
+    },
+    [98]=trophy,
+    [114]=trophy,
     -- ultra meat
     [16]={
         update=function(self)

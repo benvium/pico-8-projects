@@ -1,11 +1,17 @@
 fx={
     flap=0,
     die=1,
+    sing=2,
+    win=3,
+    off=4
 }
 
 function _init()
+    mode="game"
     cam={0,0}
+    camdx=0
     obs={}
+    countdown=120
     -- the player
     p={
         x=32,
@@ -31,6 +37,10 @@ function _init()
                     p.spr=7
                 end
                 p.x=cam[1]+32
+
+                if map_flag(p.x,p.y+6,1) and p.dy>0 then
+                    p.dy=0
+                end
             elseif p.mode=="dead" then
                 if p.y==100 then
                     p.spr=9
@@ -38,11 +48,22 @@ function _init()
                     p.spr=8
                 end
                 if p.x<(cam[1]-20) and p.y>=100 then
+                    sfx(fx.off)
                     _init()
                 end
             end
 
+            
+
+            if map_flag(p.x,p.y+6,3) then
+                mode="win"
+                countdown=240
+                sfx(fx.win)
+                return
+            end
+
             p.y=max(0, min(p.y+p.dy,100))
+            
 
             if (map_flag(p.x+6,p.y+2,0) 
             or map_flag(p.x+6,p.y+6,0))
@@ -57,39 +78,60 @@ function _init()
 end
 
 function _update60()
-    for ob in all(obs) do
-        ob:update()
+    if mode=="game" then
+        for ob in all(obs) do
+            ob:update()
+        end
+        countdown-=1
+        if countdown==0 then
+            sfx(fx.sing)
+        end
+        if countdown<0 then
+            camdx=min(camdx+0.05,1)
+            cam[1]=(cam[1]+camdx)%(128*8)
+        end
+    elseif mode=="win" then
+        countdown-=1
+        if countdown<0 then
+            _init()
+        end
     end
-    cam[1]=(cam[1]+1)%(128*8)
 end
 
 function _draw()
     cls(col.blue1)
 
-    
+    if mode=="game" then
 
-    -- --background parallax
-    -- local bgw=16
-    -- local bgtilex=flr(cam[1]/2/8)%bgw
-    -- local bgoffsetx=8-(cam[1]/2)%8-8
-    -- local bgtilew=bgw-bgtilex
-    -- map(bgtilex,16,bgoffsetx,0,bgtilew,16)
-    -- -- draw wrapped-around background
-    -- map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
-    camera(0,0)
-    --background parallax
-    local bgw=16
-    local bgtilex=flr(cam[1]/2/8)%bgw
-    local bgoffsetx=8-(cam[1]/2)%8-8
-    local bgtilew=bgw-bgtilex
-    map(bgtilex,16,bgoffsetx,0,bgtilew,16)
-    -- draw wrapped-around background
-    map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
-    -- level
-    map(flr(cam[1]/8),0,8-cam[1]%8-8,0,17,16)
+        -- --background parallax
+        -- local bgw=16
+        -- local bgtilex=flr(cam[1]/2/8)%bgw
+        -- local bgoffsetx=8-(cam[1]/2)%8-8
+        -- local bgtilew=bgw-bgtilex
+        -- map(bgtilex,16,bgoffsetx,0,bgtilew,16)
+        -- -- draw wrapped-around background
+        -- map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
+        camera(0,0)
+        --background parallax
+        local bgw=16
+        local bgtilex=flr(cam[1]/2/8)%bgw
+        local bgoffsetx=8-(cam[1]/2)%8-8
+        local bgtilew=bgw-bgtilex
+        map(bgtilex,16,bgoffsetx,0,bgtilew,16)
+        -- draw wrapped-around background
+        map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
+        -- level
+        map(flr(cam[1]/8),0,8-cam[1]%8-8,0,17,16)
 
-    camera(cam[1],0)
-    for ob in all(obs) do
-        spr(ob.spr, ob.x, ob.y)
+        camera(cam[1],0)
+        print("press x or z to flap!",24,32,col.white)
+        for ob in all(obs) do
+            spr(ob.spr, ob.x, ob.y)
+        end
+    elseif mode=="win" then
+        cls(col.blue1)
+        camera(0,0)
+        map(111,0,0,0,16,16)
+        print("home safe!",20,32,col.white)
     end
 end

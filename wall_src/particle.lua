@@ -48,35 +48,9 @@ function particle_add_at_ob(self,col2,type)
     elseif type=="fire" then
         ob.dx=0
         ob.dy=-1
-        -- ob.dx=rnd(1)-0.5
-        -- ob.dy=-2
-        -- ob.cols={col.red,col.orange,col.yellow}
-        -- ob.colidx=flr(rnd(#ob.cols))
-        -- ob.col=col.red
     elseif type=="smoke" then
         ob.dx=0.5--rnd(5)-2.5
         ob.dy=rnd(0.25)
     end
     add(obs,ob)
 end
-
--- function particle_add(x,y,col)
---     add(obs,{
---         x=x+rnd(4)-2,
---         y=y+rnd(4)-2,
---         dx=rnd(5)-2.5,
---         dy=rnd(5)-2,5,
---         col=col,
---         draw=function(self)
---             pset(self.x,self.y,self.col)
---         end,
---         update=function(self)
---             self.x+=self.dx
---             self.y+=self.dy
---             self.dy+=0.25
---             if self.y>127 then
---                 del(obs,self)
---             end
---         end
---     })
--- end
