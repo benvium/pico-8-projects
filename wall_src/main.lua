@@ -8,8 +8,12 @@ fx={
     thump=6,
     kill=7,
     fanfare=8,
-    gun=9
+    gun=9,
+    horse=12,
+    shoot=13,
 }
+
+cartdata("benvium_jump_dev")
 
 default_walkspeed=1
 
@@ -17,6 +21,12 @@ current_level=2
 
 function _init()
     level=levels[current_level]
+    music(-1)
+    if level.music~=nil then
+        music(0)
+    end
+
+    particles={}
 
     mode="game"
     -- force reload map
@@ -30,242 +40,12 @@ function _init()
         0
     }
     -- player setup
-    p = {
-        x=8,
-        y=10+level.tiley*8,
-        spr=1,
-        w=1,
-        h=1,
-        mode="walk",
-        walkspeed=1,
-        jump=nil,
-        jumpx=0,
-        flipx=false,
-        wall=false,
-        phase=0,
-        powerup=nil, -- e.g. ultrameat
-        poweruptime=0,
-        coyote=0, -- time left to jump after falling
-        hitbox={
-            x=0,
-            y=0,
-            w=7,
-            h=7
-        },
-        draw=function(self)
-            if self.powerup=="ultrameat" then
-                if flr(self.poweruptime)%2==0 then
-                    pal(col.white, col.red2)
-                    pal(col.grey2, col.red2)
-                else
-                    pal(col.white, col.black)
-                    pal(col.grey2, col.black)
-                end
-            end
-            spr(self.spr,self.x,self.y,1,1,self.flipx)
-            pal()
-        end,
-        update=function(self) 
-
-            local invincible=self.powerup=="ultrameat"
-            local walkspeed = default_walkspeed
-            
-            
-        -- leave flames..!
-        if invincible then
-            self.poweruptime-=1
-            if self.poweruptime<0 then
-                self.powerup=nil
-            end
-            walkspeed*=2
-        end
-
-          if not btn(4) then
-            canPress[4]=true
-          end
-
-          if self.mode=="dead" then
-            self.y+=1
-            self.spr=psprs.dead
-          end
-
-          if self.y>128+level.tiley*8 then
-            _init()
-            return
-          end
-
-          local canFall = can_move(self,0,1)
-          local canGoRight = can_move(self,1,0)
-          
-          if canFall then
-            -- cling to wall
-            if not canGoRight  then
-                if self.mode=="jump" then
-                    self.spr=psprs.wall
-                    sfx(fx.land,0)
-                    self.mode="wall"
-                    self.flipx=false
-                    self.x = flr(self.x/8)*8
-                end
-            
-            elseif self.mode=="walk" then
-                -- fall
-                self.jump=1
-                self.mode="jump"
-            end
-          else
-            -- can't fall: end jump/fall
-            if self.mode=="jump" then
-                self.mode="walk"
-                self.y = flr(self.y/8)*8
-                self.coyote=3
-                sfx(fx.land,0)
-            end
-          end
-
-          -- wall-walking
-          if self.mode=="wall" then
-            if btn(2) and can_move(self,0,-1) then
-                self.y-=1
-
-                -- get-up
-                if can_move(self,3,0) then
-                    self.mode="walk"
-                    self.x+=3
-                    sfx(fx.land,0)
-                    self.flipx=true
-                end
-            end
-            if btn(3) then
-                if can_move(self,0,1) then
-                    self.y+=1
-
-                    -- fall-off
-                    if can_move(self,1,0) then
-                        self.mode="walk"
-                    end
-                else
-                    self.mode="walk"
-                end
-            end
-            
-          end
-
-          -- move lr - on floor, or in air
-          if self.mode~="walljump" then
-            local moved=false
-            -- left
-            if btn(0) then 
-                if can_move(self,-walkspeed,0) then
-                    self.x-=walkspeed
-                    moved=true
-                elseif can_move(self,-walkspeed/2,0) then
-                    self.x-=walkspeed/2
-                    moved=true
-                end
-                if self.mode=="wall" and moved then
-                    -- let go
-                    self.mode="jump"
-                end
-                if moved then
-                    self.flipx=false
-                end
-                if self.x<cam[1] then
-                    self.x=cam[1]
-                end
-            end
-            
-            -- right
-            if btn(1) then 
-                if can_move(self,walkspeed,0) then
-                    self.x+=walkspeed
-                    moved=true
-                elseif can_move(self,walkspeed/2,0) then
-                    self.x+=walkspeed/2
-                    moved=true
-                else
-                    self.mode="wall"
-                    self.flipx=false
-                end
-                if moved then
-                    self.flipx=true
-                end
-            end
-            if moved then
-                self.phase=(self.phase+1)%30
-                -- if self.phase%10==0 then
-                --     sfx(fx.walk,0)
-                -- end
-            else
-                self.phase=0
-            end
-          end
-          -- jump - if on floor or from wall
-          if btn(5) then
-            canPress[4]=false
-
-            -- jump from ground
-            if self.mode~="jump" 
-            and can_move(self,0,-2,0) 
-            and self.y>2
-            then
-                if self.mode=="walk" then
-                    self.mode="jump"
-                    self.jump=-4
-                    sfx(fx.jump,1)
-                elseif self.mode=="wall" then
-                    self.mode="walljump"
-                    self.jump=-4
-                    sfx(fx.jump,1)
-                end
-            
-            end
-        end
-          if self.mode=="jump" then
-            if self.jump==nil then self.jump=0 end
-            if can_move(self,0,self.jump) then
-                self.jump=min(3, self.jump+0.25)
-                self.y+=self.jump
-            else
-                self.jump=nil
-                self.mode="walk" -- will then fall
-            end
-          end
-
-          if self.mode=="walljump" then
-            if can_move(self,-0.5,self.jump) then
-                self.jump+=0.25
-                self.y+=self.jump
-                self.x+=-0.5
-            else
-                -- can't walljump - fall
-                self.mode="jump" 
-            end
-            if self.jump>-2 then
-                self.mode="jump"
-            end
-          end
-
-          if self.mode=="walk" then
-            walkframe=flr((self.phase/30)*(#psprs.walk))+1
-            self.spr=psprs.walk[walkframe]
-          elseif self.mode=="jump" then
-            self.spr=psprs.jump
-          elseif self.mode=="wall" then
-            self.spr=psprs.wall
-          end
-
-          -- dont allow going off top of screen
-          if self.y<0 then
-            self.y=0
-          end
-        end
-    }
+    p = player_init()
 
     obs={}
     add(obs,p)
 
-      -- replace baddie map tiles with sprites
+      -- replace baddie and collectable tiles with sprites
       for x=0,128 do
         for y=level.tiley,level.tiley+15 do
             local t=mget(x,y)
@@ -292,22 +72,7 @@ function _init()
                         },
                         killable=info.killable,
                         update=function(self)
-
-                            -- do nothing if not on screen
-                            if self.x>cam[1]+128 or self.x<cam[1]-8 then
-                                return
-                            end
-                            
-                            if info~=nil and info.update~=nil then
-                                info.update(self)
-                            end
-
-                            -- remove when off-screen
-                            if self.x<cam[1]-self.hitbox.w then
-                                del(obs,self)
-                            end
-
-                            baddieCollide(self,t)
+                            baddie_update(self,info,t)
                         end
                     })
                 end
@@ -371,7 +136,6 @@ function _init()
                 local left=mget(x-1,y)~=0
                 local right=mget(x+1,y)~=0
                 
-
                 local nt=2
                 if above and below and left and right then
                     nt=2
@@ -408,42 +172,7 @@ function _init()
                     nt=43
                 end
 
-                -- print("t"..t.." a:"..above.." b:"..below.." l:"..left.." r:"..right)
-                -- stop()
-                -- elseif not above and not below and left and right then
-                --     nt=58
-                --     -- across
-                -- elseif above and below and not left and not right then
-                --     nt=12
-                --     -- up/down
-                -- elseif above and not below and not left and not right then
-                --     nt=28
-                --     -- up
-                -- elseif not above and below and not left and not right then
-                --     nt=13
-                --     -- down
-                -- elseif not above and not below and left and not right then
-                --     nt=44
-                --     -- left
-                -- elseif not above and not below and not left and right then
-                --     nt=45
-                --     -- right
-                -- end
-
                 mset(x,y,nt)
-
-
-                -- if mget(x-1,y)==0 then
-                --     -- one-thick wall
-                --     if mget(x+1,y)==0 then
-                --         mset(x,y,12)
-                --     else
-                --         -- left edge
-                --         mset(x,y,10)
-                --     end
-                -- elseif mget(x+1,y)==0 then
-                --     mset(x,y,11)
-                -- end
             end
         end
     end
@@ -451,52 +180,13 @@ end
 
 function player_kill()
     if p.mode~="dead" then
+        p.mode="dead"
         sfx(fx.die,0)
         for i=1,10 do
             particle_add_at_ob(p,col.red1)
             particle_add_at_ob(p,col.red2)
             particle_add_at_ob(p,col.brown)
         end
-        p.mode="dead"
-    end
-end
-
-function baddieCollide(self,t)
-    if p.mode=="dead" then return end
-
-    local invincible=p.powerup=="ultrameat"
-
-    if collide(self,p) then
-        if (((self.y-p.y)>3) and self.killable) or invincible then
-            sfx(fx.kill,0)
-            del(obs,self) 
-            for i=1,5 do
-                particle_add_at_ob(self,col.green2)
-                particle_add_at_ob(self,col.green1)
-                particle_add_at_ob(self,col.brown)
-            end
-            -- add 'squashed' version and animate downwards
-            add(obs,{
-                x=self.x,
-                y=self.y,
-                spr=t+1,
-                w=1,
-                h=1,
-                update=function(self)
-                    self.y+=1
-                    if self.y>128 then
-                        del(obs,self)
-                    end
-                end
-            })
-            if not invincible then
-                p.mode="jump"
-                p.jump=-3
-            end
-        else
-            player_kill()
-        end
-
     end
 end
 
@@ -507,7 +197,6 @@ psprs={
     jump=33,
     dead=49
 }
-
 
 function draw_object(ob)
     local isOnScreen=(ob.x+ob.h*8)>=cam[1] and ob.x<=cam[1]+128
@@ -525,6 +214,10 @@ function _update60()
     if mode=="game" then
         for ob in all(obs) do
             ob:update()
+        end
+
+        for pt in all(particles) do
+            pt:update()
         end
         
         -- move camera to follow player
@@ -555,6 +248,11 @@ function _draw()
         map(flr(cam[1]/8),level.tiley,8-cam[1]%8-8,0,17,16)
 
         camera(cam[1],level.tiley*8)
+
+        for pt in all(particles) do
+            pt:draw()
+        end
+
         for ob in all(obs) do
             draw_object(ob)
         end

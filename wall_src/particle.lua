@@ -13,8 +13,8 @@ function particle_update(self)
         self.dy+=0.01
     end
 
-    if self.y>127 or self.x<0 or self.y>127 then
-        del(obs,self)
+    if self.y>127+level.tiley*8 then
+        del(particles,self)
     end
 end
 
@@ -52,5 +52,5 @@ function particle_add_at_ob(self,col2,type)
         ob.dx=0.5--rnd(5)-2.5
         ob.dy=rnd(0.25)
     end
-    add(obs,ob)
+    add(particles,ob)
 end
