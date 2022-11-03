@@ -13,6 +13,7 @@ function player_init()
         wall=false,
         phase=0,
         bullets={}, -- e.g. horse carrot
+        bullet_cooldown=0,
         powerup=nil, -- e.g. ultrameat
         poweruptime=0,
         coyote=0, -- time left to jump after falling
@@ -64,32 +65,35 @@ function player_init()
             walkspeed*=2
         end
         if self.powerup=="horse" then
+            p.bullet_cooldown-=1
             wallspeed=1.5
-            if btn(4) and #p.bullets<1 then
+            if btn(4) and #p.bullets<1 and p.bullet_cooldown<=0 then
                 sfx(fx.shoot)
-                local recoil=2*(p.flipx and 1 or -1)
+                p.bullet_cooldown=60
                 local dx=4*(p.flipx and 1 or -1)
-                if can_move(self,recoil,0,0) then
-                    self.x-=recoil
-                end
+                
                 local bullet={
                     x=self.x,
                     y=self.y-2,
                     h=1,
                     w=1,
                     spr=47,
+                    flipx=p.flipx,
                     hitbox={
-                      x=self.x,
-                      y=self.y+3,
+                      x=0,
+                      y=0+3,
                       h=3,
                       w=8
                     },
                     update=function(self) 
-                        self.x+=dx
-                        if self.x>127 or self.x<-8 then
+                        if not can_move(self,dx,0,0) or self.x>127+16+cam[1] or self.x<-8-16+cam[1] then
                             del(obs,self)
                             del(p.bullets,self)
+                            for i=1,3 do
+                                particle_add_at_ob(self, col.orange)
+                            end
                         end
+                        self.x+=dx
                     end
                 }
                 add(obs, bullet,1)

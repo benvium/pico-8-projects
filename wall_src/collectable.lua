@@ -35,7 +35,6 @@ collectable={
         end
     },
     [98]=trophy,
-    [114]=trophy,
     -- ultra meat
     [16]={
         update=function(self)

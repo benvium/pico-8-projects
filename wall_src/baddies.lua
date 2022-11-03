@@ -16,54 +16,58 @@ function baddie_update(self,info,t)
     baddie_collide(self,t)
 end
 
+function baddie_kill(self,t)
+    sfx(fx.kill,0)
+    del(obs,self) 
+    for i=1,5 do
+        particle_add_at_ob(self,col.green2)
+        particle_add_at_ob(self,col.green1)
+        particle_add_at_ob(self,col.brown)
+    end
+    -- add 'squashed' version and animate downwards
+    add(obs,{
+        x=self.x,
+        y=self.y,
+        spr=t+1,
+        w=1,
+        h=1,
+        update=function(self)
+            self.y+=1
+            if self.y>128 then
+                del(obs,self)
+            end
+        end
+    })
+end
+
 function baddie_collide(self,t)
     if p.mode=="dead" then return end
 
     local invincible=p.powerup=="ultrameat"
 
-    local shot=false
+    -- collide with bullet
     for bl in all(p.bullets) do
-        stop()
+
         if collide(self,bl) then
-            shot=true
-            break
+            baddie_kill(self,t)
+            del(p.bullets,bl)
+            del(obs, bl)
+            return
         end
     end
 
-    if collide(self,p) or shot then
-
+    -- collide with player
+    if collide(self,p) then
         if self.dangerous==nil or self.dangerous then
-            -- determine if player should die or baddie
-            if (((self.y-p.y)>1) and self.killable) or invincible then
-                sfx(fx.kill,0)
-                del(obs,self) 
-                for i=1,5 do
-                    particle_add_at_ob(self,col.green2)
-                    particle_add_at_ob(self,col.green1)
-                    particle_add_at_ob(self,col.brown)
-                end
-                -- add 'squashed' version and animate downwards
-                add(obs,{
-                    x=self.x,
-                    y=self.y,
-                    spr=t+1,
-                    w=1,
-                    h=1,
-                    update=function(self)
-                        self.y+=1
-                        if self.y>128 then
-                            del(obs,self)
-                        end
-                    end
-                })
+            -- determine if player should die or baddie should
+            if (((self.y-p.y)>1) and self.killable) or shot or invincible then
+                baddie_kill(self,t)
                 if not invincible then
                     p.mode="jump"
                     p.jump=-3
                 end
             else
-                if not shot then
-                    player_kill()   
-                end
+                player_kill()   
             end
         end
     end
@@ -174,9 +178,9 @@ baddies={
             self.x-=1
             self.y=self.y+(sin((self.x-cam[1])/128)/8)
 
-            if self.phase==0 then
-                particle_add_at_ob(self, col.white, "smoke")
-            end
+            -- if self.phase==0 then
+            --     particle_add_at_ob(self, col.white, "smoke")
+            -- end
         end
     },
     -- thwomp

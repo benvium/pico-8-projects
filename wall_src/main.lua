@@ -183,9 +183,9 @@ function player_kill()
         p.mode="dead"
         sfx(fx.die,0)
         for i=1,10 do
-            particle_add_at_ob(p,col.red1)
-            particle_add_at_ob(p,col.red2)
-            particle_add_at_ob(p,col.brown)
+            particle_add_at_ob(p,col.blue2)
+            particle_add_at_ob(p,col.blue3)
+            particle_add_at_ob(p,col.white)
         end
     end
 end
