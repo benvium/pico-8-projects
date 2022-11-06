@@ -1,3 +1,5 @@
+-- note: particles = {} defined in main
+
 function particle_update(self)
     self.x+=self.dx
     self.y+=self.dy
@@ -53,4 +55,43 @@ function particle_add_at_ob(self,col2,type)
         ob.dy=rnd(0.25)
     end
     add(particles,ob)
+end
+
+-- smoke = circles
+
+function smoke_add(x,y,dy,cl)
+    if dy==nil then dy=0 end
+    if cl==nil then cl=col.white end
+    local ob = {
+        x=x+rnd(4)-2,
+        y=y+rnd(4)-2,
+        type=type,
+        dx=0,
+        dy=dy,
+        dr=-0.15,
+        r=2+rnd(2),
+        phase=0,
+        col=cl,
+        draw=smoke_draw,
+        update=smoke_update
+    }
+    add(particles,ob)
+end
+
+function smoke_update(self)
+    self.x+=self.dx
+    self.y+=self.dy
+    -- self.phase=(self.phase+1)%2
+
+    -- change size
+    self.r+=self.dr
+
+    -- if 0 remove
+    if self.r<=0 then
+        del(particles,self)
+    end
+end
+
+function smoke_draw(self)
+    circfill(self.x,self.y,self.r,self.col)
 end

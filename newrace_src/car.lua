@@ -11,7 +11,8 @@ function add_car(distance, x, type)
         h=3,
         ax=0.5, -- anchor center
         scale=1.25,
-        speed=0
+        speed=0,
+        maxspeed=rnd(1)+(maxspeed*0.8)-0.5
     }
     if type=="green" then
         car.sprx=96
@@ -60,7 +61,7 @@ function update_cars()
 
   for car in all(cars) do
     local wasInFront = car.rect and car.rect.y < playerrect.y
-    car.speed = min(car.speed+0.01, maxspeed*0.8)
+    car.speed = min(car.speed+0.01, car.maxspeed)
     car.d += car.speed
     updateobject(car)
 

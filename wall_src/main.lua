@@ -9,15 +9,21 @@ fx={
     kill=7,
     fanfare=8,
     gun=9,
+    jump2=10,
     horse=12,
     shoot=13,
 }
 
 cartdata("benvium_jump_dev")
+-- todo ^ not implemented yet!
 
 default_walkspeed=1
 
-current_level=2
+current_level=1
+
+--
+-- compress(0, '1')
+--
 
 function _init()
     level=levels[current_level]
@@ -31,16 +37,31 @@ function _init()
     mode="game"
     -- force reload map
     reload(0x1000, 0x1000, 0x2000)
+   
+
+    -- decompress(48, levels[1].data)
+    -- mset(0,63, 2)
+
+
     -- used to force you to let go of button 
     -- before you can jump again
     canPress={
         [4]=true,
     }
     cam={
+        0,
         0
     }
     -- player setup
     p = player_init()
+
+    score={
+        coins_got=0,
+        coins_total=0,
+        baddies_killed=0,
+        baddies_total=0,
+        time=time()
+    }
 
     obs={}
     add(obs,p)
@@ -224,6 +245,12 @@ function _update60()
         if p.x>cam[1]+64 then
             cam[1]=p.x-64
         end
+
+        -- return y-camera to 0
+        if cam[2]~=0 then
+            if abs(cam[2]<0.1) then cam[2]=0 end
+            -- cam[2]=cam[2]*0.7
+        end
     elseif mode=="end" then
         end_update()
     end
@@ -247,7 +274,7 @@ function _draw()
         -- level
         map(flr(cam[1]/8),level.tiley,8-cam[1]%8-8,0,17,16)
 
-        camera(cam[1],level.tiley*8)
+        camera(cam[1],level.tiley*8+cam[2])
 
         for pt in all(particles) do
             pt:draw()
@@ -257,6 +284,8 @@ function _draw()
             draw_object(ob)
         end
         camera(0,0)
+
+        print(levels[current_level].title, 8,8,col.white)
         -- print(p.mode)
         -- print(p.phase)
         -- print(walkframe)

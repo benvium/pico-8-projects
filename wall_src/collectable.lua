@@ -75,7 +75,7 @@ collectable={
                 print("ultra meat!", bx+2, by+2, col.white)
                 camera(cx,cy)
                 p.powerup="ultrameat"
-                p.poweruptime=600
+                p.poweruptime=300
             else
                 spr(16,self.x,self.y)
             end

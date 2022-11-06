@@ -62,7 +62,8 @@ function player_init()
             if self.poweruptime<0 then
                 self.powerup=nil
             end
-            walkspeed*=2
+            walkspeed*=1.5
+            smoke_add(self.x+self.w*4,self.y+self.h*4,0,col.red1)
         end
         if self.powerup=="horse" then
             p.bullet_cooldown-=1
@@ -127,6 +128,7 @@ function player_init()
                 if self.mode=="jump" then
                     self.spr=psprs.wall
                     sfx(fx.land,0)
+                    smoke_add(self.x+6+rnd(1),self.y+3+rnd(1))
                     self.mode="wall"
                     self.flipx=false
                     self.x = flr(self.x/8)*8
@@ -145,6 +147,7 @@ function player_init()
                 self.y = flr(self.y/8)*8
                 self.double_jump=nil
                 sfx(fx.land,0)
+                smoke_add(self.x+3+rnd(1),self.y+7+rnd(1))
             end
           end
 
@@ -243,10 +246,11 @@ function player_init()
                     sfx(fx.jump,1)
                 end
             elseif self.mode=="jump" and self.double_jump=='ok' then
+                -- PERFORM DOUBLE JUMP
                 self.jump=-4
-                sfx(fx.jump,1)
+                sfx(fx.jump2,1)
                 for i=0,2 do
-                    particle_add_at_ob(self,col.white)
+                    smoke_add(self.x+3+rnd(2),self.y+7+rnd(2))
                 end
                 self.double_jump='done'
             end

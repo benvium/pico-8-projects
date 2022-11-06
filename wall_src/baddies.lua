@@ -65,6 +65,7 @@ function baddie_collide(self,t)
                 if not invincible then
                     p.mode="jump"
                     p.jump=-3
+                    p.double_jump=nil
                 end
             else
                 player_kill()   
@@ -110,7 +111,7 @@ baddies={
             if can_move(self,self.dx,0) then
                 self.x+=self.dx
             else
-                self.dx*=-0.5
+                self.dx*=-1
             end
             -- fall
             if can_move(self,0,1) then
@@ -178,9 +179,9 @@ baddies={
             self.x-=1
             self.y=self.y+(sin((self.x-cam[1])/128)/8)
 
-            -- if self.phase==0 then
-            --     particle_add_at_ob(self, col.white, "smoke")
-            -- end
+            if self.phase==0 then
+                smoke_add(self.x+7,self.y+4, -0.3)
+            end
         end
     },
     -- thwomp
@@ -209,6 +210,10 @@ baddies={
                         self.y+=1
                     end
                     sfx(fx.thump,1)
+                    for i=0,2 do
+                        smoke_add(self.x+3+rnd(2),self.y+7+rnd(2))
+                    end
+                    cam[2]=3
                     self.y=flr(self.y/8)*8
                     self.mode="waitDown"
                     self.phase=30

@@ -103,20 +103,23 @@ function _draw()
 
     if mode=="game" then
 
-        -- --background parallax
-        -- local bgw=16
-        -- local bgtilex=flr(cam[1]/2/8)%bgw
-        -- local bgoffsetx=8-(cam[1]/2)%8-8
-        -- local bgtilew=bgw-bgtilex
-        -- map(bgtilex,16,bgoffsetx,0,bgtilew,16)
-        -- -- draw wrapped-around background
-        -- map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
         camera(0,0)
+         --background parallax
+
+         map(16,32,0,0,16,16)
+         local bgw=16
+         local bgtilex=flr(cam[1]/4/8)%bgw
+         local bgoffsetx=8-(cam[1]/4)%8-8
+         local bgtilew=bgw-bgtilex
+         map(bgtilex,32,bgoffsetx,-24,bgtilew,16)
+         -- draw wrapped-around background
+         map(0,32,(16-bgtilex)*8+bgoffsetx,-24,bgtilex+1,16)
+
         --background parallax
-        local bgw=16
-        local bgtilex=flr(cam[1]/2/8)%bgw
-        local bgoffsetx=8-(cam[1]/2)%8-8
-        local bgtilew=bgw-bgtilex
+        bgw=16
+        bgtilex=flr(cam[1]/2/8)%bgw
+        bgoffsetx=8-(cam[1]/2)%8-8
+        bgtilew=bgw-bgtilex
         map(bgtilex,16,bgoffsetx,0,bgtilew,16)
         -- draw wrapped-around background
         map(0,16,(16-bgtilex)*8+bgoffsetx,0,bgtilex+1,16)
@@ -124,6 +127,8 @@ function _draw()
         map(flr(cam[1]/8),0,8-cam[1]%8-8,0,17,16)
 
         camera(cam[1],0)
+        print("press x or z to flap!",24-1,32,col.black)
+        print("press x or z to flap!",24+1,32,col.black)
         print("press x or z to flap!",24,32,col.white)
         for ob in all(obs) do
             spr(ob.spr, ob.x, ob.y)
