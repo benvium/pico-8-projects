@@ -12,6 +12,7 @@ fx={
     jump2=10,
     horse=12,
     shoot=13,
+    horse_hit=14,
 }
 
 cartdata("benvium_jump_dev")
@@ -19,7 +20,7 @@ cartdata("benvium_jump_dev")
 
 default_walkspeed=1
 
-current_level=1
+current_level=3
 
 --
 -- compress(0, '1')
@@ -29,7 +30,7 @@ function _init()
     level=levels[current_level]
     music(-1)
     if level.music~=nil then
-        music(0)
+        music(level.music)
     end
 
     particles={}
@@ -199,17 +200,6 @@ function _init()
     end
 end
 
-function player_kill()
-    if p.mode~="dead" then
-        p.mode="dead"
-        sfx(fx.die,0)
-        for i=1,10 do
-            particle_add_at_ob(p,col.blue2)
-            particle_add_at_ob(p,col.blue3)
-            particle_add_at_ob(p,col.white)
-        end
-    end
-end
 
 psprs={
     idle=1,
@@ -288,7 +278,7 @@ function _draw()
         print(levels[current_level].title, 8,8,col.white)
         -- print(p.mode)
         -- print(p.phase)
-        -- print(walkframe)
+        print(p.powerup)
         -- print("obs:"..#obs)
     elseif mode=="end" then
         end_draw()

@@ -1,3 +1,32 @@
+function player_kill()
+    if p.mode~="dead" and not p.invincible then
+
+        if p.powerup=='horse' then
+            p.powerup=nil
+            
+            local horse = baddie_add(p.x,p.y-3,34,baddies[34])
+            -- horse.flipx=true
+            horse.scared=true
+            horse.scared_cooldown=30
+            sfx(fx.horse_hit,2)
+
+            -- make invincible for short time
+            p.powerup="hit"
+            p.poweruptime=15
+            
+            return
+        end
+        p.mode="dead"
+        sfx(fx.die,0)
+        for i=1,10 do
+            particle_add_at_ob(p,col.blue2)
+            particle_add_at_ob(p,col.blue3)
+            particle_add_at_ob(p,col.white)
+        end
+    end
+end
+
+
 function player_init()
     p = {
         x=8,
@@ -52,18 +81,21 @@ function player_init()
         ---------------------------------------------------------------
         update=function(self) 
 
-        
-
         -- POWERUPS
-        local invincible=self.powerup=="ultrameat"
+        p.invincible=self.poweruptime~=nil and self.poweruptime>0 and (self.powerup=="ultrameat" or self.powerup=="hit")
         local walkspeed = default_walkspeed
-        if invincible then
-            self.poweruptime-=1
-            if self.poweruptime<0 then
-                self.powerup=nil
+        if p.poweruptime~=nil and p.poweruptime>0 then
+            p.poweruptime-=1
+            if p.poweruptime==0 then
+                p.powerup=nil
             end
-            walkspeed*=1.5
-            smoke_add(self.x+self.w*4,self.y+self.h*4,0,col.red1)
+        end
+
+        if p.invincible then
+            if self.powerup=="ultrameat" then
+                walkspeed*=1.5
+                smoke_add(self.x+self.w*4,self.y+self.h*4,0,col.red1)
+            end
         end
         if self.powerup=="horse" then
             p.bullet_cooldown-=1

@@ -16,6 +16,48 @@ function baddie_update(self,info,t)
     baddie_collide(self,t)
 end
 
+function baddie_add(x,y,t,info)
+    local ob = {
+        x=x,
+        y=y,
+        spr=t,
+        t=t,
+        w=1,
+        h=1,
+        hitbox={
+            x=0,
+            y=0,
+            w=7,
+            h=7
+        },
+        update=function(self)
+
+            -- do nothing if not on screen
+            if self.x>cam[1]+128 or self.x<cam[1]-8 then
+                return
+            end
+            
+            if info~=nil and info.update~=nil then
+                info.update(self)
+            end
+
+            -- remove when off-screen
+            if self.x<cam[1]-self.hitbox.w then
+                del(obs,self)
+            end
+        end
+    }
+    -- copy over any extra info from the definition
+    if info.draw~=nil then
+        ob.draw=info.draw
+    end
+    if info.frames~=nil then
+        ob.frames=info.frames
+    end
+    add(obs,ob)
+    return ob
+end
+
 function baddie_kill(self,t)
     sfx(fx.kill,0)
     del(obs,self) 
@@ -93,7 +135,32 @@ baddies={
             -- end
             -- self.y=self.y-1
 
-            if collide(self,p) then
+
+            -- when hit, runs off
+            if self.scared then
+                local speed=0.5
+                -- run
+                if self.flipx and can_move(self,speed,0) then
+                    self.x+=speed
+                elseif not self.flipx and can_move(self,-speed,0) then
+                    self.x-=speed
+                end
+
+                -- fall
+                if can_move(self,0,1) then
+                    self.y+=1
+                end
+
+                -- prevent being able to get back on for a while
+                if self.scared_cooldown~=nil then
+                    self.scared_cooldown-=1
+                end
+                if self.scared_cooldown~=nil and self.scared_cooldown<=0 then
+                    self.scared_cooldown=nil
+                end
+            end
+
+            if self.scared_cooldown==nil and collide(self,p) then
                 del(obs, self)
                 p.powerup='horse'
                 sfx(fx.horse,3)
@@ -164,6 +231,11 @@ baddies={
                     self.x+=dx/30
                     self.spr=41
                 end
+            end
+
+            -- fall
+            if can_move(self,0,1) then
+                self.y+=1
             end
         end
     },
