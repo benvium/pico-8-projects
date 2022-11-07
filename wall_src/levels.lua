@@ -4,7 +4,7 @@ levels={
         bgtilex=0,
         -- y of start of level (0 or 32)
         tiley=0,
-        music=nil,
+        music=8,
         title="world 1-1"
     },
     [2]={
@@ -21,7 +21,7 @@ levels={
         -- y of start of level (0 or 32)
         tiley=48,
         title="World 1-3",
-        -- music=4
+        music=4
     },
 }
 

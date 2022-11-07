@@ -16,6 +16,11 @@ function end_update()
     if not btn(5) and btnPressed and min_time<0 then
         btnPressed=false
         mode="game"
+        if current_level<#levels then
+            current_level+=1
+        else
+            current_level=1
+        end
         _init()
     end
 end

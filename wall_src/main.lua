@@ -278,7 +278,7 @@ function _draw()
         print(levels[current_level].title, 8,8,col.white)
         -- print(p.mode)
         -- print(p.phase)
-        print(p.powerup)
+        -- print(p.powerup)
         -- print("obs:"..#obs)
     elseif mode=="end" then
         end_draw()
