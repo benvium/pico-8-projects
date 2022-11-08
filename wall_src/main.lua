@@ -20,7 +20,7 @@ cartdata("benvium_jump_dev")
 
 default_walkspeed=1
 
-current_level=3
+current_level=1
 
 --
 -- compress(0, '1')
@@ -248,7 +248,7 @@ end
 
 function _draw()
     if mode=="game" then
-        cls()
+        cls(col.black)
         camera(0,0)
 
         --background parallax

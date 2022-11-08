@@ -17,7 +17,7 @@ levels={
     },
     [3]={
         -- 0 = outside, 16 = underground
-        bgtilex=32,
+        bgtilex=48,
         -- y of start of level (0 or 32)
         tiley=48,
         title="World 1-3",

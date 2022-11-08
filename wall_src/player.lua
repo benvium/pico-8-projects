@@ -185,31 +185,39 @@ function player_init()
 
           -- wall-walking
           if self.mode=="wall" then
+
+            
+
+            if canFall then
+                if flr(self.y%2)==0 then
+                    smoke_add(self.x+6+rnd(1),self.y+6+rnd(1),0,col.grey2)
+                end
+                self.y+=1
+
+                if canGoRight then
+                    self.mode="jump"
+                end
+            end
+
+            -- climb up
             if btn(2) and can_move(self,0,-1) then
-                self.y-=1
+                self.y-=2
 
                 -- get-up
                 if can_move(self,3,0) then
                     self.mode="walk"
                     self.x+=3
                     sfx(fx.land,0)
-                    self.flipx=true
+                    self.flipx=not self.flipx
                 end
             end
-            -- press down for drop/downwards
-            if btn(3) then
-                if can_move(self,0,1) then
-                    self.y+=1
 
-                    -- fall-off
-                    if can_move(self,1,0) then
-                        self.mode="walk"
-                    end
-                else
-                    self.mode="walk"
-                end
-            end
-            
+            if not canFall then
+                self.mode="walk"
+                self.y = flr(self.y/8)*8
+                self.flipx=not self.flipx
+                -- face forwards
+            end           
           end
 
           -- move lr - on floor, or in air
