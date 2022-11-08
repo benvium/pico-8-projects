@@ -25,40 +25,14 @@ function apple_add(tx,ty)
         },
         mode="idle",
         update=function(self)
-            if collide(p,self) then
-                -- kill player if squashed
-                if self.mode=="fall" then
-                    if self.y<p.y then
-                        player_kill()
-                    end
-                    return
-                    -- push apple sideways
-                elseif p.x<self.x then
-                    if not map_flag(self.x+8,self.y+3,0) then
-                        self.x+=1
-                    else
-                        p.x-=1
-                    end
-                elseif p.x>self.x and not map_flag(self.x,self.y+3,0) then
-                    if not map_flag(self.x,self.y+3,0) then
-                        self.x-=1
-                    else
-                        p.x+=1
-                    end
-                end
-            end
+            
 
 
             local xb=self.x+3
             local yb=self.y+8
             -- fall if nothing underneath
             if not map_flag(xb,yb,0) then
-
-                -- ensure jumps to point where it'll fall
-                -- todo 'sticks' if you keep moving
-                local p2x=flr((xb)/8)*8
                 
-                self.x=p2x
                 if self.mode=="idle" then
                     if abs(p.x-self.x)<7 and p.y>self.y+6 and p.y<self.y+10 then
                         -- do nothing if player right underneath, hold up!
@@ -91,6 +65,30 @@ function apple_add(tx,ty)
 
                 if self.fall_distance>8 then   
                     apple_kill(self)
+                end
+            end
+
+            if collide(p,self) then
+                -- kill player if squashed
+                if self.mode=="fall" then
+                    if p.y-self.y>6 then
+                        player_kill()
+                    else
+                        self.mode="idle"
+                    end
+                    -- push apple sideways
+                elseif p.x<self.x then
+                    if not map_flag(self.x+8,self.y+3,0) then
+                        self.x+=1
+                    else
+                        p.x-=1
+                    end
+                elseif p.x>self.x then
+                    if not map_flag(self.x,self.y+3,0) then
+                        self.x-=1
+                    else
+                        p.x+=1
+                    end
                 end
             end
         end

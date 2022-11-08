@@ -88,6 +88,8 @@ add(obs,p2)
         addHole(x,10,true)      
     end
 
+    baddie_add(9*8,4*8)
+
     apple_add(5,1)
     apple_add(5,4)
     apple_add(9,1)
