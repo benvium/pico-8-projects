@@ -23,6 +23,13 @@ function apple_add(tx,ty)
             w=7,
             h=7
         },
+        debug_label=function(self) 
+            local msg=self.mode
+            if self.fall_distance~=nil then
+                msg=msg..","..self.fall_distance
+            end
+            return msg
+        end,
         mode="idle",
         update=function(self)
             
@@ -34,9 +41,10 @@ function apple_add(tx,ty)
             if not map_flag(xb,yb,0) then
                 
                 if self.mode=="idle" then
-                    if abs(p.x-self.x)<7 and p.y>self.y+6 and p.y<self.y+10 then
+                    if abs(p.x-self.x)<7 and p.y>self.y+6 and p.y<self.y+13 then
                         -- do nothing if player right underneath, hold up!
                         printh("hold up "..rnd())
+                        return
                     else
                         self.mode="fall"
                         self.fall_distance=0
@@ -55,39 +63,50 @@ function apple_add(tx,ty)
                         end
                     end
                 end
-
-                
-
             elseif self.mode=="fall" then
-                -- break on contact
+                -- stop falling 
                 self.mode="idle"
                 sfx(-1,0)
 
+                -- break on contact with ground if fallen far enough
                 if self.fall_distance>8 then   
                     apple_kill(self)
+                else
+                    self.fall_distance=nil
                 end
             end
 
-            if collide(p,self) then
+            if collide(p,self)  then
                 -- kill player if squashed
-                if self.mode=="fall" then
-                    if p.y-self.y>6 then
+                if self.mode=="fall" then 
+                    if self.fall_distance~=nil and self.fall_distance>2 then
+                    -- local ydiff=p.y-self.y
+                    -- printh("ydiff apple player col "..ydiff)
+                    -- if ydiff<0 then
                         player_kill()
+                        return
                     else
+                        printh("caught apple in time")
                         self.mode="idle"
-                    end
-                    -- push apple sideways
-                elseif p.x<self.x then
-                    if not map_flag(self.x+8,self.y+3,0) then
-                        self.x+=1
-                    else
-                        p.x-=1
-                    end
-                elseif p.x>self.x then
-                    if not map_flag(self.x,self.y+3,0) then
-                        self.x-=1
-                    else
-                        p.x+=1
+                        self.fall_distance=nil
+                        sfx(-1,0)
+                        -- stop it falling
+                        return
+                    end 
+                elseif self.mode=="idle" then
+                    -- not falling, push apple sideways
+                    if p.x<self.x then
+                        if not map_flag(self.x+8,self.y+3,0) then
+                            self.x+=1
+                        else
+                            p.x-=1
+                        end
+                    elseif p.x>self.x then
+                        if not map_flag(self.x,self.y+3,0) then
+                            self.x-=1
+                        else
+                            p.x+=1
+                        end
                     end
                 end
             end

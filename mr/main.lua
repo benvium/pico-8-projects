@@ -2,7 +2,15 @@ fx={
     split=0,
     fall=1,
     dig=2,
+    die=3,
 }
+
+-- tile that a 1x1 sprite is mostly occupying
+function tile_for(ob)
+    local x=flr(ob.x+4/8)*8
+    local y=flr(ob.y+4/8)*8
+    return {x, y}
+end
 
 function _init()
 
@@ -11,55 +19,7 @@ function _init()
 
     particles={}
     
-    p={
-        x=16,
-        y=16,
-        spr=16,
-        w=1,
-        h=1,
-        hitbox={
-            x=1,
-            y=1,
-            w=6,
-            h=6
-        },
-        update=function(self)
-            local p2x=flr((self.x+4)/8)*8
-            local p2y=flr((self.y+4)/8)*8
-            -- local tx=flr((self.x+4)/8)
-            -- local ty=flr((self.y+4)/8)
-            -- local dty=(self.y+4)-((p2.y*8)+4)
-            -- local dtx=(self.x+4)-((p2.x*8)+4)
-            if (btn(0)) then 
-                --left
-                self.x-=1
-                self.y+=(p2y-self.y)/4
-            elseif (btn(1)) then 
-                self.x+=1
-                self.y+=(p2y-self.y)/4
-
-            elseif (btn(2)) then 
-                self.y-=1
-                self.x+=(p2x-self.x)/4
-            elseif (btn(3)) then 
-                self.y+=1
-                self.x+=(p2x-self.x)/4
-            end
-
-            local tx=flr(flr(self.x+4)/8)
-            local ty=flr(flr(self.y+4)/8)
-            local t = mget(tx,ty)
-            -- if t~=0 then
-                -- dig!!
-                addHole(tx,ty)
-                updateEdges(tx,ty)
-                updateEdges(tx-1,ty)
-                updateEdges(tx+1,ty)
-                updateEdges(tx,ty-1)
-                updateEdges(tx,ty+1)
-            -- end
-        end
-    }
+    p=player_init()
     obs={}
     add(obs,p)
 add(obs,p2)
@@ -177,6 +137,9 @@ function _draw()
     end
     for o in all(obs) do
         spr(o.spr,o.x,o.y,o.w,o.h)
+        if o.debug_label~=nil then 
+            print(o:debug_label(), o.x, o.y, col.white)
+        end
     end
 end
 
