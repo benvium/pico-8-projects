@@ -31,6 +31,10 @@ function player_init()
             w=6,
             h=6
         },
+        -- debug_label=function(self) 
+        --     local msg=self.x..","..self.y
+        --     return msg
+        -- end,
         update=function(self)
 
             if self.mode=="play" then

@@ -1,3 +1,5 @@
+-- todo fix can go up through an apple
+-- todo can push apple in earth left, but not right
 fx={
     split=0,
     fall=1,
@@ -138,6 +140,8 @@ function _draw()
     for o in all(obs) do
         spr(o.spr,o.x,o.y,o.w,o.h)
         if o.debug_label~=nil then 
+            print(o:debug_label(), o.x-1, o.y, col.black)
+            print(o:debug_label(), o.x+1, o.y, col.black)
             print(o:debug_label(), o.x, o.y, col.white)
         end
     end

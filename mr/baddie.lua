@@ -13,6 +13,10 @@ function baddie_add(x,y)
             w=7,
             h=7
         },
+        -- debug_label=function(self) 
+        --     local msg=self.dx..","..self.dy
+        --     return msg
+        -- end,
         update=baddie_update
     })
 end
@@ -22,13 +26,33 @@ function baddie_update(self)
     local my=self.y+4
     -- local tx=flr(flr(mx)/8)
     -- local ty=flr(flr(my)/8)
-
-    -- printh(self.x.." "..self.y..""..(flr(self.x)%8)..' '..(flr(self.y)%8))
-    if flr(self.x)%8~=0 or flr(self.y)%8~=0 then
+    if can_move(self,self.dx,self.dy) then
         self.x+=self.dx
         self.y+=self.dy
-        return
+    else
+        -- change direction..
+        local opts={
+            {1,0},
+            {-1,0},
+            {0,1},
+            {0,-1}
+        }
+        local newdir=opts[flr(rnd(#opts))+1]
+        self.dx=newdir[1]
+        self.dy=newdir[2]
     end
+
+    if collide(self,p) and p.mode~="dead" then
+        player_kill()
+    end
+    
+
+    -- printh(self.x.." "..self.y..""..(flr(self.x)%8)..' '..(flr(self.y)%8))
+    -- if flr(self.x)%8~=0 or flr(self.y)%8~=0 then
+    --     self.x+=self.dx
+    --     self.y+=self.dy
+    --     return
+    -- end
     -- stop()
 
     -- if tx*8~=self.x and ty*8~=self.y then return end
