@@ -1,5 +1,8 @@
 -- todo fix can go up through an apple
 -- todo can push apple in earth left, but not right
+-- todo can push an apple THROUGH a baddie
+
+-- todo make apple shift to 8x8 grid when falling
 fx={
     split=0,
     fall=1,
@@ -20,6 +23,8 @@ function _init()
     reload(0x1000, 0x1000, 0x2000)
 
     particles={}
+    baddies={}
+    apples={}
     
     p=player_init()
     obs={}
@@ -51,6 +56,7 @@ add(obs,p2)
     end
 
     baddie_add(9*8,4*8)
+    baddie_add(12*8,4*8)
 
     apple_add(5,1)
     apple_add(5,4)

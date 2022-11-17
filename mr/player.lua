@@ -1,5 +1,6 @@
 function player_kill()
-    -- _init()
+    if p.mode=="dead" then return end
+    
     p.mode="dead"
     p.phase=60
 

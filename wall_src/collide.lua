@@ -41,6 +41,13 @@ function can_move(ob,dx,dy,flag)
     return true
 end
 
+function will_collide(a,b)
+    return collide(
+        {x=a.x+a.dx,y=a.y+a.dy,hitbox=a.hitbox},
+        {x=b.x+b.dx,y=b.y+b.dy,hitbox=b.hitbox}
+    )
+end
+
 function collide(a, b)
     return intersects({
         x=a.x+a.hitbox.x,
