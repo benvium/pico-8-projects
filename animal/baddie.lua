@@ -1,21 +1,3 @@
--- function baddie_update(self,info,t)
---     -- do nothing if not on screen
---     if self.x>cam[1]+128 or self.x<cam[1]-8 then
---         return
---     end
-    
---     if info~=nil and info.update~=nil then
---         info.update(self)
---     end
-
---     -- remove when off-screen
---     if self.x<cam[1]-self.hitbox.w then
---         del(obs,self)
---     end
-
---     baddie_collide(self,t)
--- end
-
 function baddie_draw(self)
     if self._draw then 
         self:_draw()
@@ -46,29 +28,16 @@ function baddie_add(x,y,t,info)
                 self.y+=self.dy or 0
             end
 
-            -- -- do nothing if not on screen
-            -- if self.x>cam[1]+128 or self.x<cam[1]-8 then
-            --     return
-            -- end
-            
             if info~=nil and info.update~=nil then
                 info.update(self)
             end
-
-            -- -- remove when off-screen
-            -- if self.x<cam[1]-self.hitbox.w then
-            --     del(obs,self)
-            -- end
         end,
         _draw=info.draw,
         draw=baddie_draw
     }
     add(obs,ob)
+    add(baddies,ob)
     return ob
-end
-
-function baddie_collide(self,t)
-
 end
 
 -- replace baddie and collectable tiles with sprites
@@ -87,6 +56,86 @@ function baddie_init()
     end
 end
 
+function chicken_explode(self)
+    del(obs,self)
+    del(baddies,self)
+    offset=0.1
+
+    local tx=flr((self.x+3)/8)
+    local ty=flr((self.y+3)/8)
+
+    sfx(3,0)
+
+    --- draw a hole
+    mset(16+tx,48+ty,2)
+
+    for i=1,10 do 
+        smoke_add(self.x+3+rnd(10)-5,self.y+3+rnd(10)-5,0,col.red1,0)
+        smoke_add(self.x+3+rnd(10)-5,self.y+3+rnd(10)-5,0,col.white,i*2)
+        smoke_add(self.x+3+rnd(10)-5,self.y+3+rnd(10)-5,0,col.red2,i*3)
+    end
+    
+    for i=1,10 do
+        particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.white)
+        particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.yellow,i*2)
+        particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.red,i)
+    end
+
+    -- damage nearby chickens
+    for b in all(baddies) do
+        if b.t==34 then
+            local dx = b.x-self.x
+            local dy = b.y-self.y
+            local d = sqrt(dx*dx+dy*dy)
+            if d<48 then
+                b.health-=75
+                if d<32 then
+                    b.health-=150
+
+                    if d<16 then
+                        b.health-=200
+                    end
+                end
+                -- move chicken away
+                b.dx = dx/d*2
+                b.dy = dy/d*2
+            end
+        end
+    end
+
+    -- destroy nearby collectables
+    for c in all(collectables) do
+        local dx = c.x-self.x
+        local dy = c.y-self.y
+        local d = sqrt(dx*dx+dy*dy)
+        if d<32 then
+            apple_kill(c)
+        end
+    end
+
+    -- kill player if nearby
+    -- todo make work?
+    -- if player~=nil then
+    --     local dx = player.x-self.x
+    --     local dy = player.y-self.y
+    --     local d = sqrt(dx*dx+dy*dy)
+    --     if d<32 then
+    --         player.health=0
+    --     end
+    -- end
+
+    exploded+=1
+
+    if #baddies<=0 then
+        mode="end"
+        dtb_disp("all your chickens asplode!")
+        dtb_disp("why not try again?", function()
+            mode="intro"
+            _init()
+        end)
+    end
+end
+
 baddie_types={
     -- pig
     [25]={
@@ -101,7 +150,7 @@ baddie_types={
         draw=function(self)
             spr(self.spr, self.x, self.y, self.w, self.h, (self.dx or 0)<0)
 
-            if self.health<300 then
+            if self.health<300 and self.health>0 then
                 local h = min(self.health/300,300)
                 rectfill(self.x,self.y-1,self.x+7,self.y-1,0)
                 rectfill(self.x,self.y-1,self.x+7*h,self.y-1,8)
@@ -109,64 +158,76 @@ baddie_types={
         end,
         update=function(self)
 
-            self.health-=0.5
+            if self.mode==nil then self.mode="ok" end
 
-            -- EXPLODE if out of health
-            if self.health<=0 then
-                del(obs,self)
-                del(baddies,self)
-                offset=0.1
+            if self.mode=="will_explode" then
+                self.explode_timeout-=1
 
-                local tx=flr((self.x+3)/8)
-                local ty=flr((self.y+3)/8)
+                -- vibrate violently!
+                self.dx = rnd(3)-1.5
+                self.dy = rnd(3)-1.5
 
-                sfx(3,0)
+                smoke_add(self.x+3+rnd(5)-2.5,self.y-5,-0.5,col.white,0,1)
 
-                --- draw a hole
-                mset(16+tx,48+ty,2)
-
-                for i=1,10 do 
-                    smoke_add(self.x+3+rnd(10)-5,self.y+3+rnd(10)-5,0,col.red1,0)
-                    smoke_add(self.x+3+rnd(10)-5,self.y+3+rnd(10)-5,0,col.white,i*2)
-                    smoke_add(self.x+3+rnd(10)-5,self.y+3+rnd(10)-5,0,col.red2,i*3)
+                if self.explode_timeout<=0 then
+                    chicken_explode(self)
                 end
-                
-                for i=1,10 do
-                    particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.white)
-                    particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.yellow,i*2)
-                    particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.red,i)
-                end
-                return
             end
 
-            -- lay eggs
-            if self.health>300 and flr(rnd(1000))==0 then
-                sfx(2,0)
-                collectable_add(self.x,self.y-1,48,collectable_types[48])
-            end
+            if self.mode=="ok" then
+                self.health-=0.5
 
-            -- munch through food
-            if self.eat_cooldown~=nil then
-                self.eat_cooldown-=1
-                if self.eat_cooldown<0 then self.eat_cooldown=nil end
-            else
-                local move = self.health<120 and 10 or 30
-                -- move
-                if flr(rnd(move))==1 then
-                    self.dx = rnd(2)-1
-                    self.dy = rnd(2)-1
+                -- EXPLODE if out of health
+                if self.health<=0 then
+                    self.mode="will_explode"
+                    self.explode_timeout=40
+                    return
                 end
 
-                if self.health<500 then
-                    -- if it touches an apple, eat it a bit
-                    for c in all(collectables) do
-                        if c.eat~=nil and collide(self,c) then
-                            self.dx=0
-                            self.dy=0
-                            c:eat()
-                            self.eat_cooldown=60
-                            self.health=min(self.health+200, 600)
-                            break
+                -- warn!
+                if self.health==150 then
+                sfx(5,1) 
+                elseif self.health==75 then
+                sfx(6,1) 
+                end
+
+                -- lay eggs
+                if self.health>500 then
+                    if self.egg_timer==nil then
+                        self.egg_timer=0
+                    end
+                    self.egg_timer+=1
+
+                    if self.egg_timer>600 then
+                        self.egg_timer=0
+                        sfx(2,0)
+                        collectable_add(self.x,self.y-1,48,collectable_types[48])
+                    end
+                end
+
+                -- munch through food
+                if self.eat_cooldown~=nil then
+                    self.eat_cooldown-=1
+                    if self.eat_cooldown<0 then self.eat_cooldown=nil end
+                else
+                    local move = self.health<120 and 10 or 30
+                    -- move
+                    if flr(rnd(move))==1 then
+                        self.dx = rnd(.5)-.25
+                        self.dy = rnd(.5)-.25
+                    end
+
+                    if self.health<500 then
+                        -- if it touches an apple, eat it a bit
+                        for c in all(collectables) do
+                            if c.eat~=nil and collide(self,c) then
+                                self.dx=0
+                                self.dy=0
+                                c:eat()
+                                self.eat_cooldown=60
+                                self.health=min(self.health+200, 600)
+                                break
+                            end
                         end
                     end
                 end

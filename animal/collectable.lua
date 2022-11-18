@@ -71,6 +71,14 @@ function collectable_add(x,y,t,info)
     return ob
 end
 
+function apple_kill(self)
+    collectable_del(self)
+    particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/25,col.red1,0,10)
+    particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.red2,0,10)
+    particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.red1,0,10)
+    particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.red2,0,10)
+end
+
 collectable_types = {
     -- apple
     [52]={
@@ -83,11 +91,7 @@ collectable_types = {
             self.health-=1
             self.spr=(4-self.health)+52
             if self.health<=0 then
-                collectable_del(self)
-                particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/25,col.red1,0,10)
-                particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.red2,0,10)
-                particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.red1,0,10)
-                particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.red2,0,10)
+                apple_kill(self)
             else
                 particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.white,0,10)
                 particle_add(self.x+3,self.y+3,(rnd(5)-2.5)/2,(rnd(5)-2.5)/2,col.white,0,10)
@@ -97,14 +101,14 @@ collectable_types = {
     [48]={
         health=300,
         carry=true,
-        -- draw=function(self)
-        --     spr(self.spr, self.x, self.y, self.w, self.h)
-        --     print(self.health, self.x, self.y)
-        -- end,
         update=function(self)
             self.health-=1
 
             printh("egg health: "..self.health)
+
+            if self.health==180 then
+                sfx(7,0)
+            end
 
             if self.health<180 then
                 self.spr=49
@@ -117,6 +121,7 @@ collectable_types = {
             end
             if self.health<=0 then
                 collectable_del(self)
+                sfx(8,0)
                 -- becomes a chicken!
                 baddie_add(self.x,self.y,34,baddie_types[34])
             end

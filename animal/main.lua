@@ -1,3 +1,5 @@
+dtb_init(3)
+
 function _init()
     for x=0,16 do
         for y=0,16 do
@@ -6,9 +8,12 @@ function _init()
     end
     obs={}
     cam={0,0}
+    mode="intro"
+
+    -- force reload map
+    reload(0x1000, 0x1000, 0x2000)
 
     player_init()
-    dtb_init()
 
     baddie_init()
     collectable_init()
@@ -18,6 +23,14 @@ function _init()
 
     -- make btnp repeat time really long
     poke(0x5f5c,500) 
+
+    apple_counter=300
+
+    exploded=0
+
+    dtb_disp("feed chickens, but watch out if they get too hungry! pick up and drop apples with ❎ ", function()
+        mode="game"
+    end)
 end
 
 -- http://gamedev.docrobs.co.uk/screen-shake-in-pico-8#
@@ -38,8 +51,6 @@ function screen_shake()
 function _draw()
     screen_shake()
     cls(col.green1)
-    -- green
-    map(0,48,0,0,16,16)
 
     -- holes
     map(16,48,0,0,16,16)
@@ -62,16 +73,71 @@ function _draw()
 
     -- text
     dtb_draw()
+
+    rectfill(0,0,127,6,col.blue1)
+    rectfill(0,0,127,1,col.blue2)
+    rectfill(0,5,127,6,col.black)
+    print("chickens: "..#baddies,0,1,0)
+    print("chickens: "..#baddies,1,1,7)
+
+    print("exploded: "..exploded,63,1,0)
+    print("exploded: "..exploded,64,1,7)
+
+    if mode=="intro" then
+        local px=32
+        local py=32
+        rectfill(px,py,96,66,col.black)
+        rectfill(px+2,py+2,94,64,col.blue1)
+        print("exploding",px+8,py+8,col.black)
+        print("exploding",px+8,py+8+1,col.red1)
+        print("exploding",px+8,py+8+2,col.red2)
+        print("chickens",px+20-1,py+20,col.brown)
+        print("chickens",px+20,py+20,col.yellow)
+    end
 end
 
 function _update60()
-    for ob in all(obs) do
-        ob:update()
-    end
+    dtb_update()
+
     for particle in all(particles) do
         particle:update()
     end
-    dtb_update()
+
+    if mode=="intro" then
+        
+    elseif mode=="game" then
+        for ob in all(obs) do
+            ob:update()
+        end 
+
+        apple_counter-=1
+        -- add apples occasionally
+        if apple_counter<1 then
+
+            while true do
+                local x=rnd(128-16+8)
+                local y=rnd(128-16+8)
+                if not map_flag(x+4,y+4,0) then
+                    sfx(1,0)
+                    collectable_add(x,y,52,collectable_types[52])
+                    smoke_add(x+4,y+4,-0.25,col.white)
+                    smoke_add(x-3+4,y-2+4,-0.25,col.white)
+                    smoke_add(x+3+4,y-2+4,-0.25,col.white)
+                    break
+                end
+            end
+
+            if #baddies<5 then
+                apple_counter=300
+            elseif #baddies<10 then
+                apple_counter=200
+            elseif #baddies<15 then
+                apple_counter=100
+            else
+                apple_counter=60
+            end 
+        end
+    end
 end
 
 -- https://www.lexaloffle.com/bbs/?pid=50453

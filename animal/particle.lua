@@ -49,40 +49,13 @@ function particle_add(x,y,dx,dy,col2,delay,life)
     add(particles,ob)
 end
 
-function particle_add_at_ob(self,col2,type)
-    if type==nil then type="shower" end
-    local x =self.x+self.hitbox.x+self.hitbox.w/2
-    local y= self.y+self.hitbox.y+self.hitbox.h/2
-    local ob = {
-        x=x+rnd(4)-2,
-        y=y+rnd(4)-2,
-        h=1/8,
-        w=1/8,
-        col=col2,
-        type=type,
-        phase=0,
-        draw=particle_draw,
-        update=particle_update
-    }
-    if type=="shower" then 
-        ob.dx=rnd(5)-2.5
-        ob.dy=rnd(3)-2.5
-    elseif type=="fire" then
-        ob.dx=0
-        ob.dy=-1
-    elseif type=="smoke" then
-        ob.dx=0.5--rnd(5)-2.5
-        ob.dy=rnd(0.25)
-    end
-    add(particles,ob)
-end
-
 -- smoke = circles
 
-function smoke_add(x,y,dy,cl,delay)
+function smoke_add(x,y,dy,cl,delay,size)
     if dy==nil then dy=0 end
     if delay==nil then delay=0 end
     if cl==nil then cl=col.white end
+    if size==nil then size=2 end
     local ob = {
         x=x+rnd(4)-2,
         y=y+rnd(4)-2,
@@ -90,7 +63,7 @@ function smoke_add(x,y,dy,cl,delay)
         dx=0,
         dy=dy,
         dr=-0.15,
-        r=2+rnd(2),
+        r=size+rnd(2),
         phase=0,
         col=cl,
         delay=delay,

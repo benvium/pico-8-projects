@@ -103,8 +103,8 @@ end
 
 function player_init()
     player={
-        x=64,
-        y=64,
+        x=64-4,
+        y=64+4,
         w=1,
         h=2,
         dir="r", -- direction
