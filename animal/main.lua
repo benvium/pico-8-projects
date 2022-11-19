@@ -1,5 +1,7 @@
 dtb_init(3)
 
+cartdata("benvium_exploding_chickens_v1")
+
 function _init()
     for x=0,16 do
         for y=0,16 do
@@ -9,6 +11,7 @@ function _init()
     obs={}
     cam={0,0}
     mode="intro"
+    high_score=dget(0) or 0
 
     -- force reload map
     reload(0x1000, 0x1000, 0x2000)
@@ -24,9 +27,14 @@ function _init()
     -- make btnp repeat time really long
     poke(0x5f5c,500) 
 
+    -- frames until another apple appears
     apple_counter=300
 
+    -- 10pts per munch
+    score=0
+
     exploded=0
+    
 
     dtb_disp("feed chickens, but watch out if they get too hungry! pick up and drop apples with ❎ ", function()
         mode="game"
@@ -58,6 +66,25 @@ function _draw()
     -- trees (lower)
     map(0,0,0,0,16,16)
 
+    -- hud
+    rectfill(0,0,127,6,col.blue1)
+    rectfill(0,0,127,1,col.blue2)
+    rectfill(0,5,127,6,col.black)
+    spr(34,1,-1,1,1)
+    print(#baddies,10,1,0)
+    print(#baddies,11,1,7)
+
+    spr(2,1+32,-1,1,1)
+
+    print(exploded,10+32,1,0)
+    print(exploded,11+32,1,7)
+
+    
+    print("score",64+8,1,col.black)
+    print("score",65+8,1,col.grey2)
+    print(score,64+32,1,0)
+    print(score,65+32,1,7)
+
     -- draw obs
     sort(obs, function(a,b) return (a.y+a.h*8)>(b.y+b.h*8) end)
     for ob in all(obs) do
@@ -73,15 +100,6 @@ function _draw()
 
     -- text
     dtb_draw()
-
-    rectfill(0,0,127,6,col.blue1)
-    rectfill(0,0,127,1,col.blue2)
-    rectfill(0,5,127,6,col.black)
-    print("chickens: "..#baddies,0,1,0)
-    print("chickens: "..#baddies,1,1,7)
-
-    print("exploded: "..exploded,63,1,0)
-    print("exploded: "..exploded,64,1,7)
 
     if mode=="intro" then
         local px=32
@@ -136,6 +154,9 @@ function _update60()
             else
                 apple_counter=60
             end 
+
+            -- increase difficulty by making timer longer the longer the game goes on
+            apple_counter+=flr(score/15)
         end
     end
 end

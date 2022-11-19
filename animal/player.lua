@@ -1,5 +1,22 @@
 function player_draw(self)
 
+
+
+    -- draw body
+    local body
+    local walk_anim = self.walk_frame==nil and 0 or (flr(self.walk_frame/5)+1)
+    if self.dir == "r" then
+        body={26+16*walk_anim,false}
+    elseif self.dir == "l" then
+        body={26+16*walk_anim,true}
+    elseif self.dir == "u" then
+        body={28+16*walk_anim,false}
+    elseif self.dir == "d" then
+        body={27+16*walk_anim,false}
+    end
+
+    spr(body[1], self.x, self.y+8, 1, 1, body[2], false)
+
     local head
     if self.dir == "r" then
         head={10,false}
@@ -13,20 +30,6 @@ function player_draw(self)
 
     spr(head[1], self.x, self.y, 1, 1, head[2], false)
 
-    -- draw body
-    local body
-    if self.dir == "r" then
-        body={26,false}
-    elseif self.dir == "l" then
-        body={26,true}
-    elseif self.dir == "u" then
-        body={28,false}
-    elseif self.dir == "d" then
-        body={27,false}
-    end
-
-    spr(body[1], self.x, self.y+8, 1, 1, body[2], false)
-
     -- draw hints
     if self.can_carry~=nil then
         print("❎ pick up", self.x-1, self.y-8, col.black)
@@ -37,8 +40,6 @@ function player_draw(self)
         print("❎ drop", self.x+1, self.y-8, col.black)
         print("❎ drop", self.x, self.y-8, col.white)
     end
-
-    -- print(tostring(self.carry_item))
 end
 
 function player_update(self)
@@ -72,6 +73,15 @@ function player_update(self)
         end
     end
 
+    -- walk animation
+    if self.dx~=0 or self.dy~=0 then
+        if self.walk_frame==nil then self.walk_frame=0 end
+        self.walk_frame=(self.walk_frame+1)%10
+    else
+        self.walk_frame=nil
+    end
+
+
     if self.carry_item then
         self.carry_item.x=self.x
         self.carry_item.y=self.y+9
@@ -86,6 +96,7 @@ function player_update(self)
     self.dx=0
     self.dy=0
 
+  
     -- see if we can pick things up
     self.can_carry=nil
     if self.carry_item==nil then

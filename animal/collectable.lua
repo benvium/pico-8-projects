@@ -89,6 +89,9 @@ collectable_types = {
             sfx(4,0)
 
             self.health-=1
+
+            score+=10
+            
             self.spr=(4-self.health)+52
             if self.health<=0 then
                 apple_kill(self)
@@ -98,6 +101,7 @@ collectable_types = {
             end
         end,
     },
+    -- egg
     [48]={
         health=300,
         carry=true,
