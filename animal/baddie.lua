@@ -56,6 +56,8 @@ function baddie_init()
     end
 end
 
+
+
 function chicken_explode(self)
     del(obs,self)
     del(baddies,self)
@@ -114,34 +116,19 @@ function chicken_explode(self)
     end
 
     -- kill player if nearby
-    -- todo make work?
-    -- if player~=nil then
-    --     local dx = player.x-self.x
-    --     local dy = player.y-self.y
-    --     local d = sqrt(dx*dx+dy*dy)
-    --     if d<32 then
-    --         player.health=0
-    --     end
-    -- end
+    if player~=nil then
+        local dx = player.x-self.x
+        local dy = player.y-self.y
+        local d = sqrt(dx*dx+dy*dy)
+        if d<24 then
+            player_kill()
+        end
+    end
 
     exploded+=1
 
     if #baddies<=0 then
-        local isHighscore = score > high_score
-        if isHighscore then
-            dset(0, score)
-        end
-        mode="end"
-        dtb_disp("all your chickens asplode!")
-        if isHighscore then
-            dtb_disp("new high score! " .. score)
-        else
-            dtb_disp("you scored "..score.." points. the high score is "..high_score)
-        end
-        dtb_disp("why not try again?", function()
-            mode="intro"
-            _init()
-        end)
+        end_game()
     end
 end
 
@@ -190,6 +177,7 @@ baddie_types={
                 if self.health<=0 then
                     self.mode="will_explode"
                     self.explode_timeout=40
+                    sfx(9,1)
                     return
                 end
 
@@ -208,7 +196,7 @@ baddie_types={
                     self.egg_timer+=1
 
                     -- more eggs as game goes on
-                    if self.egg_timer>(600-flr(score/10)) then
+                    if self.egg_timer>(800-flr(score/10)) then
                         self.egg_timer=0
                         sfx(2,0)
                         collectable_add(self.x,self.y-1,48,collectable_types[48])
@@ -223,8 +211,8 @@ baddie_types={
                     local move = self.health<120 and 10 or 30
                     -- move
                     if flr(rnd(move))==1 then
-                        self.dx = rnd(.5)-.25
-                        self.dy = rnd(.5)-.25
+                        self.dx = rnd(.2)-.1
+                        self.dy = rnd(.2)-.1
 
 
                         -- speed up as game goes on

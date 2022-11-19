@@ -112,6 +112,35 @@ function player_update(self)
     end
 end
 
+function player_kill()
+    local self=player
+    for i=1,15 do 
+        smoke_add(self.x+3+rnd(20)-10,self.y+3+rnd(20)-10,0,col.red1,0)
+        smoke_add(self.x+3+rnd(20)-10,self.y+3+rnd(20)-10,0,col.white,i*2)
+        smoke_add(self.x+3+rnd(20)-10,self.y+3+rnd(20)-10,0,col.red2,i*3)
+    end
+    
+    for i=1,15 do
+        particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.white)
+        particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.yellow,i*2)
+        particle_add(self.x+3,self.y+3,rnd(5)-2.5,rnd(5)-2.5,col.red,i)
+    end
+
+    end_game()
+    del(obs, self)
+    add(obs, {
+        x=self.x,
+        y=self.y,
+        h=1,
+        w=2,
+        hitbox={x=0,y=0,w=1,h=1}, 
+        update=function() end,
+        draw=function(self)
+            spr(13,self.x,self.y,2,1,false,false)
+        end
+    })
+end
+
 function player_init()
     player={
         x=64-4,

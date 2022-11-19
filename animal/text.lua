@@ -86,7 +86,7 @@ function dtb_update()
         local curlinelength=#dtb_dislines[dislineslength]
         local complete=curlinelength>=#curlines[dtb_curline]
         if complete and dtb_curline>=#curlines then
-            if btnp(4) then
+            if btnp(4) or btnp(5) then
                 _dtb_nexttext()
                 return
             end
@@ -105,11 +105,11 @@ function dtb_update()
                     end
                     dtb_dislines[dislineslength]=dtb_dislines[dislineslength]..curchar
                 end
-                if btnp(4) then
+                if btnp(4) or btnp(5) then
                     dtb_dislines[dislineslength]=curlines[dtb_curline]
                 end
             else
-                if btnp(4) then
+                if btnp(4) or btnp(5) then
                     _dtb_nextline()
                 end
             end

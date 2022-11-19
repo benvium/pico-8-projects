@@ -39,6 +39,8 @@ function _init()
     dtb_disp("feed chickens, but watch out if they get too hungry! pick up and drop apples with ❎ ", function()
         mode="game"
     end)
+
+    music(0)
 end
 
 -- http://gamedev.docrobs.co.uk/screen-shake-in-pico-8#
@@ -175,3 +177,28 @@ function sort(a,cmp)
       end
     end
   end
+
+
+  -- end game
+function end_game()
+    music(-1, 1000)
+    local isHighscore = score > high_score
+    if isHighscore then
+        dset(0, score)
+    end
+    mode="end"
+    if #baddies<=0 then
+        dtb_disp("all your chickens exploded!")
+    else
+        dtb_disp("you got exploded! stay away from explosions!")
+    end
+    if isHighscore then
+        dtb_disp("new high score! " .. score)
+    else
+        dtb_disp("you scored "..score.." points. the high score is "..high_score)
+    end
+    dtb_disp("why not try again?", function()
+        mode="intro"
+        _init()
+    end)
+end
