@@ -1,67 +1,84 @@
+block_name={
+    ["cheese"]=1,
+    ["leaf"]=2,
+    ["bread"]=3,
+    ["coke"]=4,
+    ["ketchup"]=5,
+    ["water"]=6,
+    ["meat"]=7,
+}
+
 block_types={
     [1]={
-        -- diamond
+        -- cheese
         n=1,
-        t=1,
+        t=2,
         sfx=1,
-        c=col.blue3
+        c=col.yellow
     },
     [2]={
-        -- apple
+        -- leaf
         n=2,
-        t=2,
+        t=3,
         sfx=2,
-        c=col.pink2
+        c=col.green1
     },
     [3]={
-        -- leaf
+        -- bread
         n=3,
-        t=3,
+        t=4,
         sfx=3,
-        c=col.green2,
+        c=col.brown
     },
     [4]={
-        -- heart
+        -- coke
         n=4,
-        t=4,
+        t=17,
         sfx=4,
-        c=col.pink2,
+        c=col.pink1
     },
     [5]={
-        -- potion
+        -- ketchup
         n=5,
-        t=5,
+        t=18,
         sfx=6,
         c=col.red2,
     },
     [6]={
-        -- crate
+        -- water
         n=6,
-        t=17,
-        sfx=5,
-        c=col.brown,
-    },
-    [7]={
-        -- grapes
-        n=7,
-        t=18,
-        sfx=3,
-        c=col.blue2,
-    },
-    [8]={
-        -- axe
-        n=8,
         t=19,
         sfx=5,
-        c=col.grey2
+        c=col.blue3
     },
-    [9]={
-        -- feather
-        n=9,
-        t=20,
-        sfx=1,
-        c=col.white
+    [7]={
+        -- meat
+        n=7,
+        t=5,
+        sfx=5,
+        c=col.pink2
     },
+    -- [7]={
+    --     -- grapes
+    --     n=7,
+    --     t=18,
+    --     sfx=3,
+    --     c=col.blue2,
+    -- },
+    -- [8]={
+    --     -- axe
+    --     n=8,
+    --     t=19,
+    --     sfx=5,
+    --     c=col.grey2
+    -- },
+    -- [7]={
+    --     -- feather
+    --     n=7,
+    --     t=20,
+    --     sfx=1,
+    --     c=col.white
+    -- },
 }
 
 
@@ -321,6 +338,10 @@ function board_check_for_lines()
                 sfx(fx,0)
             end
         end
+
+        battle_check_ingredients()
+
+        -- battle_check_defeat()
         -- fx = block
         -- local fx=allBlocksKilled[0] and block_types[allBlocksKilled[0].n].fx or 1
         -- 

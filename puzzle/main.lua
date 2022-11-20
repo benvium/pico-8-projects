@@ -25,21 +25,23 @@ function _init()
         score[i]=0
     end
 
+    battle_init()
+
     board_check_for_lines()
 end
 
 function _draw()
     cls(0)
     camera(0,0)
-    map(0,0,0,0,16,16)
+    map(0,0,-4,-4,17,14)
 
-    camera(-2*8-1, -2*8-1)
+    camera(-2*8-1+4, -2*8-1+4)
 
     rect(-2,-2,8*block_size-1,8*block_size-1,col.black)
     rect(-2-8,-2-8,9*block_size-3,9*block_size-3,col.black)
 
     -- CLIP TO GAME AREA
-    clip(2*8,2*8,8*block_size,8*block_size)
+    clip(2*8-4,2*8-4,8*block_size,8*block_size)
 
     if mode=="slide" then
         -- draw selection rows
@@ -85,13 +87,21 @@ function _draw()
     -- draw scores
     for i=1,#block_types do
         local b=block_types[i]
-        spr(b.t, 90, i*8+1)
-        print(score[i], 100, 2+i*8, col.white)
+        spr(b.t, 90, i*8+1-20)
+        print(score[i], 100, 2+i*8-20, col.white)
+    end
+    camera(0,0)
+
+    -- draw order
+    print("order", 103,61,col.grey1)
+    if baddie_current~=nil then
+        -- stop(tostring(baddie_current.food))
+        -- for ing in baddie_current.food.ingredients do
+        --     local n=block_name[ing]
+        -- end
     end
 
-    -- for t,s in pairs(score) do
-    --     print(t..":"..s,0,0,col.white)
-    -- end
+    battle_draw()
 end
 
 function _update60()
@@ -195,4 +205,6 @@ function _update60()
     for part in all(particles) do
         part:update()
     end
+
+    battle_update()
 end
