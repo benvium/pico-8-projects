@@ -64,16 +64,9 @@ function board_init()
             }
         end
     end
-
-    
-    -- -- todo run until no matches
-    -- for x=0,7 do
-    --     board_fall(x)
-    -- end
 end
 
-
-function check_lines(n,x,y,blocks)
+function check_lines_vertical(n,x,y,blocks)
     local r=1
     
     -- look left
@@ -89,7 +82,7 @@ function check_lines(n,x,y,blocks)
     end
 end
 
-function check_lines_col(n,x,y,blocks)
+function check_lines_horizontal(n,x,y,blocks)
     -- look up
     local r=1
     while(y+r>=0 and board[x] and board[x][y+r] and board[x][y+r].n==n) do
@@ -274,7 +267,7 @@ function board_check_for_lines()
                 b.dx=0
                 b.dy=0
                 local lineBlocks = {{x=x,y=y}}
-                check_lines(b.n,x,y,lineBlocks)
+                check_lines_horizontal(b.n,x,y,lineBlocks)
 
                 if #lineBlocks>=3 then
                     for block in all(lineBlocks) do
@@ -284,7 +277,7 @@ function board_check_for_lines()
                 end
 
                 local lineBlocksCol = {{x=x,y=y}}
-                check_lines_col(b.n,x,y,lineBlocksCol)
+                check_lines_vertical(b.n,x,y,lineBlocksCol)
                 if #lineBlocksCol>=3 then
                     for block in all(lineBlocksCol) do
                         block_kill(block.x, block.y)
