@@ -1,80 +1,13 @@
-block_types={
-    [1]={
-        -- diamond
-        n=1,
-        t=1,
-        sfx=0,
-    },
-    [2]={
-        -- apple
-        n=2,
-        t=2,
-        sfx=2,
-    },
-    [3]={
-        -- leaf
-        n=3,
-        t=3,
-        sfx=3,
-    },
-    [4]={
-        -- heart
-        n=4,
-        t=4,
-        sfx=4,
-    },
-    [5]={
-        -- potion
-        n=5,
-        t=5,
-        sfx=5,
-    },
-    [6]={
-        -- crate
-        n=6,
-        t=17,
-        sfx=4,
-    },
-    [7]={
-        -- grapes
-        n=7,
-        t=18,
-        sfx=6,
-    },
-}
+
 
 block_size=10
 
 function _init()
     board={}
 
-    -- board is 8x8 but we have a row around the edge
-    -- for dropping tiles in or rotating around
-    for x=-1,8 do
-        for y=-1,8 do
-            if board[x]==nil then board[x]={} end
-            board[x][y]=nil
-        end
-    end
-    
-    for x=0,7 do
-        for y=0,7 do
-            local info = rnd(block_types)
-            board[x][y]={
-                item=info, 
-                dx=0,
-                dy=0
-            }
-        end
-    end
+    board_init()
 
-    
-    -- todo run until no matches
-    for x=0,7 do
-        board_fall(x)
-    end
-
-    -- tile coords
+    -- tile coords of 'player'
     p={x=4,y=4}
 
     particles={}
@@ -91,6 +24,8 @@ function _init()
     for i=1,#block_types do
         score[i]=0
     end
+
+    board_check_for_lines()
 end
 
 function _draw()
@@ -104,8 +39,7 @@ function _draw()
     rect(-2-8,-2-8,9*block_size-3,9*block_size-3,col.black)
 
     -- CLIP TO GAME AREA
-    -- clip(2*8,2*8,8*block_size,8*block_size)
-    -- todo put back
+    clip(2*8,2*8,8*block_size,8*block_size)
 
     if mode=="slide" then
         -- draw selection rows
@@ -129,7 +63,7 @@ function _draw()
         for y=-1,8 do
             local b=board[x][y]
             if b~=nil then
-                spr(b.item.t,x*block_size+b.dx,y*block_size+b.dy)
+                spr(block_types[b.n].t,x*block_size+b.dx,y*block_size+b.dy)
                 -- print(b.dx,x*block_size+b.dx-1,y*block_size+b.dy,col.white)
                 -- print(b.dy,x*block_size+b.dx-1,y*block_size+b.dy+6,col.white)
                 -- print(b.dx..","..b.dy,x*block_size+b.dx,y*block_size+b.dy,col.white)
@@ -240,48 +174,13 @@ function _update60()
                     end
                 end
 
-                local blockKillCount=0
-                -- see if we've made any lines
-                for x=0,7 do
-                    for y=0,7 do
-                        
-                        local b=board[x][y]
-                        -- reset dx/dy just in case
-                        if b~=nil then
-                            b.dx=0
-                            b.dy=0
-                            local lineBlocks = {{item=b,x=x,y=y}}
-                            check_lines(b.t,x,y,lineBlocks)
-
-                            -- todo put back 
-                            -- if #lineBlocks>=3 then
-                            --     for block in all(lineBlocks) do
-                            --         block_kill(block)
-                            --         blockKillCount+=1
-                            --         -- todo dupe
-                            --     end
-                            -- end
-
-                            -- local lineBlocksCol = {{item=b,x=x,y=y}}
-                            -- check_lines_col(b.t,x,y,lineBlocksCol)
-                            -- if #lineBlocksCol>=3 then
-                            --     for block in all(lineBlocksCol) do
-                            --         block_kill(block)
-                            --         blockKillCount+=1
-                            --     end
-                            -- end
-                        end
-                    end
-                end
-                if blockKillCount>0 then
-                    sfx(1)
-                end
+                board_check_for_lines()
             end
         end
     end
 
     -- enter slide mode
-    if btnp(4) then 
+    if btnp(4) or btnp(5) then 
         if mode=="move" then
             mode="slide"
             slide_cooldown=60
@@ -289,17 +188,17 @@ function _update60()
         end
     end
 
-    if btnp(5) then 
-        -- temp pop a block
-        board[p.x][p.y]=nil
-    end
+    -- if btnp(5) then 
+    --     -- temp pop a block
+    --     board[p.x][p.y]=nil
+    -- end
 
     -- todo put back fall mode
-    -- if mode=="move" then
-    --     for col=0,7 do
-    --         board_fall(col)
-    --     end
-    -- end
+    if mode=="move" then
+        for col=0,7 do
+            board_fall(col)
+        end
+    end
 
     for part in all(particles) do
         part:update()
