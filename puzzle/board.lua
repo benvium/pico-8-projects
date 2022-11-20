@@ -48,6 +48,20 @@ block_types={
         sfx=3,
         c=col.blue2,
     },
+    [8]={
+        -- axe
+        n=8,
+        t=19,
+        sfx=5,
+        c=col.grey2
+    },
+    [9]={
+        -- feather
+        n=9,
+        t=20,
+        sfx=1,
+        c=col.white
+    },
 }
 
 

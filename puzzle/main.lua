@@ -35,7 +35,7 @@ function _draw()
 
     camera(-2*8-1, -2*8-1)
 
-    rect(-2,-2,8*block_size-1,8*block_size-1,col.brown)
+    rect(-2,-2,8*block_size-1,8*block_size-1,col.black)
     rect(-2-8,-2-8,9*block_size-3,9*block_size-3,col.black)
 
     -- CLIP TO GAME AREA
