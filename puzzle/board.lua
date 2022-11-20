@@ -3,43 +3,50 @@ block_types={
         -- diamond
         n=1,
         t=1,
-        sfx=0,
+        sfx=1,
+        c=col.blue3
     },
     [2]={
         -- apple
         n=2,
         t=2,
         sfx=2,
+        c=col.pink2
     },
     [3]={
         -- leaf
         n=3,
         t=3,
         sfx=3,
+        c=col.green2,
     },
     [4]={
         -- heart
         n=4,
         t=4,
         sfx=4,
+        c=col.pink2,
     },
     [5]={
         -- potion
         n=5,
         t=5,
-        sfx=5,
+        sfx=6,
+        c=col.red2,
     },
     [6]={
         -- crate
         n=6,
         t=17,
-        sfx=4,
+        sfx=5,
+        c=col.brown,
     },
     [7]={
         -- grapes
         n=7,
         t=18,
-        sfx=6,
+        sfx=3,
+        c=col.blue2,
     },
 }
 
@@ -64,6 +71,9 @@ function board_init()
             }
         end
     end
+
+    -- used to trigger checking for lines *after* falling has finished
+    falling_cooldown=0
 end
 
 function check_lines_vertical(n,x,y,blocks)
@@ -100,7 +110,7 @@ end
 
 
 function board_fall(x)
-    local toDelete={}
+    local moved=false
     for y=-1,7 do
         local b=board[x][y]
         if b~=nil and y<7 then
@@ -113,16 +123,7 @@ function board_fall(x)
                     board[x][y+1]=b
                     board[x][y]=nil
                     b.dy=0
-
-                    -- see if we've made any lines
-                    local lineBlocks = {{x=x,y=y+1}}
-                    check_lines(b.n,x,y+1,lineBlocks)
-
-                    if #lineBlocks>=3 then
-                        foreach(lineBlocks, function (item)
-                            add(toDelete, item)
-                        end)
-                    end
+                    moved=true
                 end
             end
         end
@@ -132,19 +133,21 @@ function board_fall(x)
     for x=0,7 do
         if board[x][0]==nil and board[x][-1]==nil then
             board[x][-1]={n=rnd(block_types).n, dx=0,dy=0}
+            moved=true
         end
     end
 
-    --
-    if #toDelete>0 then
-        sfx(1)
-    end
-    for i=1,#toDelete do
-        local item=toDelete[i]
-        block_kill(item.x, item.y)
-    end
+    -- a bit after falling ends, trigger a check for lines
+    if not moved then
+        if falling_cooldown>0 then falling_cooldown-=1 end
 
-    return #toDelete
+        if falling_cooldown==0 then
+            falling_cooldown=-1
+            board_check_for_lines()
+        end
+    else
+        falling_cooldown=10
+    end
 end
 
 
@@ -153,9 +156,10 @@ function block_kill(x,y)
     board[x][y]=nil
 
     if item~=nil then
-        smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,col.white,0,2)
-        smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,col.white,2,2)
-        smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,col.white,5,2)
+        local c=block_types[item.n].c
+        smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,0,2)
+        smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,2,2)
+        smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,5,2)
         score[item.n]=(score[item.n] or 0)+1
     end
 end
@@ -257,6 +261,7 @@ end
 
 function board_check_for_lines()
     local blockKillCount=0
+    local allBlocksKilled={}
     -- see if we've made any lines
     for x=0,7 do
         for y=0,7 do
@@ -271,8 +276,10 @@ function board_check_for_lines()
 
                 if #lineBlocks>=3 then
                     for block in all(lineBlocks) do
+                        local n = board[block.x][block.y].n
                         block_kill(block.x, block.y)
                         blockKillCount+=1
+                        add(allBlocksKilled, {x=block.x, y=block.y, n=n})
                     end
                 end
 
@@ -280,14 +287,28 @@ function board_check_for_lines()
                 check_lines_vertical(b.n,x,y,lineBlocksCol)
                 if #lineBlocksCol>=3 then
                     for block in all(lineBlocksCol) do
+                        local n = board[block.x][block.y].n
                         block_kill(block.x, block.y)
                         blockKillCount+=1
+                        add(allBlocksKilled, {x=block.x, y=block.y, n=n})
                     end
                 end
             end
         end
     end
     if blockKillCount>0 then
-        sfx(1)
+        local block1 = allBlocksKilled[1]
+        
+        if block1 then
+            local fx = block_types[block1.n] and block_types[block1.n].sfx
+            -- stop(tostring(block1)..','..block1.n..''..tostring(block_types[block1.n]))
+            -- stop()
+            if fx~=nil then
+                sfx(fx,0)
+            end
+        end
+        -- fx = block
+        -- local fx=allBlocksKilled[0] and block_types[allBlocksKilled[0].n].fx or 1
+        -- 
     end
 end

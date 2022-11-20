@@ -14,7 +14,7 @@ col={
     orange=9,
     yellow=10,
     pink1=14,
-    pint2=15
+    pink2=15
 }
 
 function clone(from)

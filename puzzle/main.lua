@@ -188,16 +188,8 @@ function _update60()
         end
     end
 
-    -- if btnp(5) then 
-    --     -- temp pop a block
-    --     board[p.x][p.y]=nil
-    -- end
-
-    -- todo put back fall mode
-    if mode=="move" then
-        for col=0,7 do
-            board_fall(col)
-        end
+    for col=0,7 do
+        board_fall(col)
     end
 
     for part in all(particles) do
