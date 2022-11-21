@@ -13,14 +13,14 @@ block_types={
         -- cheese
         n=1,
         t=2,
-        sfx=1,
+        sfx=3,
         c=col.yellow
     },
     [2]={
         -- leaf
         n=2,
         t=3,
-        sfx=2,
+        sfx=4,
         c=col.green1
     },
     [3]={
@@ -41,44 +41,23 @@ block_types={
         -- ketchup
         n=5,
         t=18,
-        sfx=6,
+        sfx=3,
         c=col.red2,
     },
     [6]={
         -- water
         n=6,
         t=19,
-        sfx=5,
+        sfx=4,
         c=col.blue3
     },
     [7]={
         -- meat
         n=7,
         t=5,
-        sfx=5,
+        sfx=3,
         c=col.pink2
     },
-    -- [7]={
-    --     -- grapes
-    --     n=7,
-    --     t=18,
-    --     sfx=3,
-    --     c=col.blue2,
-    -- },
-    -- [8]={
-    --     -- axe
-    --     n=8,
-    --     t=19,
-    --     sfx=5,
-    --     c=col.grey2
-    -- },
-    -- [7]={
-    --     -- feather
-    --     n=7,
-    --     t=20,
-    --     sfx=1,
-    --     c=col.white
-    -- },
 }
 
 
@@ -121,6 +100,16 @@ function check_lines_vertical(n,x,y,blocks)
         add(blocks, {x=x+r,y=y})
         r-=1
     end
+
+    -- calculate score
+    if #blocks==3 then 
+        return 1
+    elseif #blocks==4 then
+        return 2
+    elseif #blocks==5 then
+        return 4
+    end
+    return 0
 end
 
 function check_lines_horizontal(n,x,y,blocks)
@@ -137,6 +126,16 @@ function check_lines_horizontal(n,x,y,blocks)
         add(blocks, {x=x,y=y+r})
         r-=1
     end
+
+    -- calculate score
+    if #blocks==3 then 
+        return 1
+    elseif #blocks==4 then
+        return 2
+    elseif #blocks==5 then
+        return 4
+    end
+    return 0
 end
 
 
@@ -191,8 +190,44 @@ function block_kill(x,y)
         smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,0,2)
         smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,2,2)
         smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,5,2)
-        score[item.n]=(score[item.n] or 0)+1
+        -- score[item.n]=(score[item.n] or 0)+1
     end
+end
+
+function board_collect_popover(n,itemScore,x)
+    local t = (block_types[n] or {}).t
+    local starty=0
+    local endy=15
+    local startx=x --38+rnd(30-15)
+    add(obs,{
+        x=startx,
+        y=starty,
+        -- dx=0,
+        -- dy=-1,
+        -- n=n,
+        -- t=0,
+        -- score=itemScore
+        draw=function(self)
+            -- fillp(0b0101101001011010.1) -- .1 = transparent
+            rectfill(self.x-1,self.y-1,self.x+31,self.y+10,col.black)
+            rectfill(self.x-2,self.y,self.x+32,self.y+9,col.black)
+            rectfill(self.x,self.y,self.x+30,self.y+8,col.grey1)
+            rectfill(self.x-1,self.y+1,self.x+30+1,self.y+7,col.grey1)
+            -- fillp()
+            spr(t,self.x+2,self.y,1,1)
+            print("x "..itemScore,self.x+12,self.y+2,col.black)
+            print("x "..itemScore,self.x+13,self.y+2,col.white)
+            
+        end,
+        update=function (self) 
+            self.y+=0.5
+            if self.y>endy then
+                del(obs,self)
+                -- smoke_add(self.x+15,self.y,0,col.white,0,2)
+            end
+            smoke_add(self.x+rnd(30)-15, self.y-10, -0.3, col.white, rnd(4), 1)
+        end
+    })        
 end
 
 function shift_row(y,dx)
@@ -303,26 +338,38 @@ function board_check_for_lines()
                 b.dx=0
                 b.dy=0
                 local lineBlocks = {{x=x,y=y}}
-                check_lines_horizontal(b.n,x,y,lineBlocks)
+                local toAdd = check_lines_horizontal(b.n,x,y,lineBlocks)
 
-                if #lineBlocks>=3 then
+                if toAdd>0 then
                     for block in all(lineBlocks) do
-                        local n = board[block.x][block.y].n
-                        block_kill(block.x, block.y)
-                        blockKillCount+=1
-                        add(allBlocksKilled, {x=block.x, y=block.y, n=n})
+                        if board[block.x][block.y]~=nil then
+                            local n = board[block.x][block.y].n
+                            block_kill(block.x, block.y)
+                            blockKillCount+=1
+                            add(allBlocksKilled, {x=block.x, y=block.y, n=n})
+                        end
                     end
+                    score[b.n]=(score[b.n] or 0)+toAdd
+
+                    -- stop(tostring(b),0,0,col.pink)
+                    board_collect_popover(b.n,toAdd,x*block_size+12)
+
                 end
 
                 local lineBlocksCol = {{x=x,y=y}}
-                check_lines_vertical(b.n,x,y,lineBlocksCol)
-                if #lineBlocksCol>=3 then
+                toAdd = check_lines_vertical(b.n,x,y,lineBlocksCol)
+                if toAdd>0 then
                     for block in all(lineBlocksCol) do
-                        local n = board[block.x][block.y].n
-                        block_kill(block.x, block.y)
-                        blockKillCount+=1
-                        add(allBlocksKilled, {x=block.x, y=block.y, n=n})
+                        if board[block.x][block.y]~=nil then
+                            local n = board[block.x][block.y].n
+                            block_kill(block.x, block.y)
+                            blockKillCount+=1
+                            add(allBlocksKilled, {x=block.x, y=block.y, n=n})
+                        end
                     end
+                    score[b.n]=(score[b.n] or 0)+toAdd
+
+                    board_collect_popover(b.n,toAdd,x*block_size+12)
                 end
             end
         end

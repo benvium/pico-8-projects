@@ -28,6 +28,9 @@ function _init()
     battle_init()
 
     board_check_for_lines()
+
+    -- other objects to draw/update each frame
+    obs={}
 end
 
 function _draw()
@@ -65,7 +68,8 @@ function _draw()
         for y=-1,8 do
             local b=board[x][y]
             if b~=nil then
-                spr(block_types[b.n].t,x*block_size+b.dx,y*block_size+b.dy)
+                local jiggle=(b.animate or 0)>0 and 1 or 0
+                spr(block_types[b.n].t,x*block_size+b.dx,y*block_size+b.dy+jiggle)
                 -- print(b.dx,x*block_size+b.dx-1,y*block_size+b.dy,col.white)
                 -- print(b.dy,x*block_size+b.dx-1,y*block_size+b.dy+6,col.white)
                 -- print(b.dx..","..b.dy,x*block_size+b.dx,y*block_size+b.dy,col.white)
@@ -96,16 +100,89 @@ function _draw()
     print("order", 103,61,col.grey1)
     if baddie_current~=nil then
         -- stop(tostring(baddie_current.food))
+        local food_n = baddie_current.food.n
+
+        local origFood = food_types[food_n]
+
+        local y = 69
+        for ing in all(origFood.ingredients) do
+            local n = block_name[ing]
+            local block = block_types[n]
+            spr(block.t, 103, y)
+            -- todo work out if we've done this
+
+            local isDone=true
+            for ingLeft in all(baddie_current.food.ingredients) do
+                if ingLeft==ing then
+                    isDone=false
+                end
+            end
+            if isDone then
+                spr(36,103+10,y)
+            else
+                spr(35,103+10,y)
+            end
+
+            -- stop(tostring(ing))
+            -- spr(food_types[n].t, 103, y, 1, 1, false, false)
+            -- print(origFood.ingredients[ing], 110, y, col.white)
+            y+=8
+        end
+        -- if origFood~=nil then
+        --     spr(b.t, 90, i*8+1-20)
+        --     print(score[i], 100, 2+i*8-20, col.white)
+        -- end
+
+
+
+        -- get original list of ingredients for given food
+
+
+
         -- for ing in baddie_current.food.ingredients do
         --     local n=block_name[ing]
         -- end
     end
 
     battle_draw()
+
+    camera(0,0)
+
+    -- all other objects
+    for ob in all(obs) do
+        ob:draw()
+    end
 end
 
 function _update60()
     frame=(frame+1)%60
+
+    if flr(rnd(120))==0 then
+        -- make a random item animate
+        local x=flr(rnd(8))
+        local y=flr(rnd(8))
+        local b=board[x][y]
+        if b~=nil then
+            b.animate=10
+        end
+    end
+
+    -- update item animations
+    for x=0,7 do
+        for y=0,7 do
+            local b=board[x][y]
+            if b~=nil then
+                if (b.animate or 0)>0 then
+                    b.animate-=1
+                    -- b.dx=rnd(2)-1
+                    -- b.dy=rnd(2)-1
+                end
+                --     b.dx=0
+                --     b.dy=0
+                -- end
+            end
+        end
+    end
 
     if mode=="move" then
         -- move mode is moving the 'cursor' around 
@@ -161,7 +238,7 @@ function _update60()
         else 
             -- exit move mode after a delay
             slide_cooldown-=1
-            if slide_cooldown<=0 then
+            if slide_cooldown<=0 and not btn(4) and not btn(5) then
                 mode="move"
 
                 -- clear all blocks off the sides of the board
@@ -190,7 +267,7 @@ function _update60()
     end
 
     -- enter slide mode
-    if btnp(4) or btnp(5) then 
+    if btn(4) or btn(5) then 
         if mode=="move" then
             mode="slide"
             slide_cooldown=60
@@ -207,4 +284,9 @@ function _update60()
     end
 
     battle_update()
+
+    -- all other objects
+    for ob in all(obs) do
+        ob:update()
+    end
 end
