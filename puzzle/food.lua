@@ -1,0 +1,32 @@
+food_types={
+    [1]={
+        n=1,
+        name="cheeseburger",
+        t=26,
+        ingredients={"bread","cheese","meat"},
+    },
+    [2]={
+        n=2,
+        name="saladburger",
+        t=27,
+        ingredients={"bread","cheese","leaf"},
+    },
+    [3]={
+        n=3,
+        name="ketchupburger",
+        t=28,
+        ingredients={"bread","meat","ketchup"},
+    },
+    [4]={
+        n=4,
+        name="coke",
+        t=17,
+        ingredients={"coke"},
+    },
+    [5]={
+        n=5,
+        name="water",
+        t=19,
+        ingredients={"water"},
+    },
+}

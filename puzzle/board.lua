@@ -8,54 +8,59 @@ block_name={
     ["meat"]=7,
 }
 
+block_sfx={
+    [1]={3,7,8},
+    [2]={10,11,12},
+}
+
 block_types={
     [1]={
         -- cheese
         n=1,
         t=2,
-        sfx=3,
+        sfx=1,
         c=col.yellow
     },
     [2]={
         -- leaf
         n=2,
         t=3,
-        sfx=4,
+        sfx=2,
         c=col.green1
     },
     [3]={
         -- bread
         n=3,
         t=4,
-        sfx=3,
+        sfx=1,
         c=col.brown
     },
     [4]={
         -- coke
         n=4,
         t=17,
-        sfx=4,
+        sfx=2,
         c=col.pink1
     },
     [5]={
         -- ketchup
         n=5,
         t=18,
-        sfx=3,
+        sfx=2,
         c=col.red2,
     },
     [6]={
         -- water
         n=6,
         t=19,
-        sfx=4,
+        sfx=1,
         c=col.blue3
     },
     [7]={
         -- meat
         n=7,
         t=5,
-        sfx=3,
+        sfx=2,
         c=col.pink2
     },
 }
@@ -190,45 +195,9 @@ function block_kill(x,y)
         smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,0,2)
         smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,2,2)
         smoke_add(x*block_size+block_size/2,y*block_size+block_size/2,0,c,5,2)
-        -- score[item.n]=(score[item.n] or 0)+1
     end
 end
 
-function board_collect_popover(n,itemScore,x)
-    local t = (block_types[n] or {}).t
-    local starty=0
-    local endy=15
-    local startx=x --38+rnd(30-15)
-    add(obs,{
-        x=startx,
-        y=starty,
-        -- dx=0,
-        -- dy=-1,
-        -- n=n,
-        -- t=0,
-        -- score=itemScore
-        draw=function(self)
-            -- fillp(0b0101101001011010.1) -- .1 = transparent
-            rectfill(self.x-1,self.y-1,self.x+31,self.y+10,col.black)
-            rectfill(self.x-2,self.y,self.x+32,self.y+9,col.black)
-            rectfill(self.x,self.y,self.x+30,self.y+8,col.grey1)
-            rectfill(self.x-1,self.y+1,self.x+30+1,self.y+7,col.grey1)
-            -- fillp()
-            spr(t,self.x+2,self.y,1,1)
-            print("x "..itemScore,self.x+12,self.y+2,col.black)
-            print("x "..itemScore,self.x+13,self.y+2,col.white)
-            
-        end,
-        update=function (self) 
-            self.y+=0.5
-            if self.y>endy then
-                del(obs,self)
-                -- smoke_add(self.x+15,self.y,0,col.white,0,2)
-            end
-            smoke_add(self.x+rnd(30)-15, self.y-10, -0.3, col.white, rnd(4), 1)
-        end
-    })        
-end
 
 function shift_row(y,dx)
     local isLeft=dx<0
@@ -324,19 +293,28 @@ function shift_col(x,dy)
     end
 end
 
+function block_fx(n,toAdd)
+    local fx1 = block_types[n] and block_types[n].sfx or nil
+    if fx1==nil then return end
+    local fx2=block_sfx[fx1]
+    if fx2==nil then return end
+    local fx3=fx2[toAdd]
+    sfx(fx3,0)
+end
+
 
 function board_check_for_lines()
     local blockKillCount=0
     local allBlocksKilled={}
+    local fx
     -- see if we've made any lines
     for x=0,7 do
         for y=0,7 do
-            
             local b=board[x][y]
             -- reset dx/dy just in case
             if b~=nil then
-                b.dx=0
-                b.dy=0
+                -- b.dx=0
+                -- b.dy=0
                 local lineBlocks = {{x=x,y=y}}
                 local toAdd = check_lines_horizontal(b.n,x,y,lineBlocks)
 
@@ -354,6 +332,7 @@ function board_check_for_lines()
                     -- stop(tostring(b),0,0,col.pink)
                     board_collect_popover(b.n,toAdd,x*block_size+12)
 
+                    block_fx(b.n,toAdd)
                 end
 
                 local lineBlocksCol = {{x=x,y=y}}
@@ -370,27 +349,15 @@ function board_check_for_lines()
                     score[b.n]=(score[b.n] or 0)+toAdd
 
                     board_collect_popover(b.n,toAdd,x*block_size+12)
+
+                    block_fx(b.n,toAdd)
                 end
             end
         end
     end
     if blockKillCount>0 then
-        local block1 = allBlocksKilled[1]
         
-        if block1 then
-            local fx = block_types[block1.n] and block_types[block1.n].sfx
-            -- stop(tostring(block1)..','..block1.n..''..tostring(block_types[block1.n]))
-            -- stop()
-            if fx~=nil then
-                sfx(fx,0)
-            end
-        end
 
         battle_check_ingredients()
-
-        -- battle_check_defeat()
-        -- fx = block
-        -- local fx=allBlocksKilled[0] and block_types[allBlocksKilled[0].n].fx or 1
-        -- 
     end
 end

@@ -34,7 +34,7 @@ function _init()
 end
 
 function _draw()
-    cls(0)
+    cls(col.blue1)
     camera(0,0)
     map(0,0,-4,-4,17,14)
 
@@ -45,6 +45,8 @@ function _draw()
 
     -- CLIP TO GAME AREA
     clip(2*8-4,2*8-4,8*block_size,8*block_size)
+    rectfill(0-2,0-2,8*block_size,8*block_size,col.black)
+    -- cls(col.black)
 
     if mode=="slide" then
         -- draw selection rows
@@ -57,10 +59,6 @@ function _draw()
         rectfill(p.x*block_size-1,-1,(p.x+1)*(block_size)-2,8*block_size-2,col.blue1)
         
         rectfill(-1,p.y*block_size-1,8*block_size-2, (p.y+1)*(block_size)-2,col.blue1)
-
-    
-        -- rect(p.x*block_size-1,-1,(p.x+1)*(block_size)-2,8*block_size-2,col.white)
-        -- rect(-1,p.y*block_size-1,8*block_size-2, (p.y+1)*(block_size)-2,col.white)
     end
     fillp()
 
@@ -70,9 +68,6 @@ function _draw()
             if b~=nil then
                 local jiggle=(b.animate or 0)>0 and 1 or 0
                 spr(block_types[b.n].t,x*block_size+b.dx,y*block_size+b.dy+jiggle)
-                -- print(b.dx,x*block_size+b.dx-1,y*block_size+b.dy,col.white)
-                -- print(b.dy,x*block_size+b.dx-1,y*block_size+b.dy+6,col.white)
-                -- print(b.dx..","..b.dy,x*block_size+b.dx,y*block_size+b.dy,col.white)
             end
         end
     end
@@ -109,7 +104,6 @@ function _draw()
             local n = block_name[ing]
             local block = block_types[n]
             spr(block.t, 103, y)
-            -- todo work out if we've done this
 
             local isDone=true
             for ingLeft in all(baddie_current.food.ingredients) do
@@ -123,25 +117,8 @@ function _draw()
                 spr(35,103+10,y)
             end
 
-            -- stop(tostring(ing))
-            -- spr(food_types[n].t, 103, y, 1, 1, false, false)
-            -- print(origFood.ingredients[ing], 110, y, col.white)
             y+=8
         end
-        -- if origFood~=nil then
-        --     spr(b.t, 90, i*8+1-20)
-        --     print(score[i], 100, 2+i*8-20, col.white)
-        -- end
-
-
-
-        -- get original list of ingredients for given food
-
-
-
-        -- for ing in baddie_current.food.ingredients do
-        --     local n=block_name[ing]
-        -- end
     end
 
     battle_draw()
@@ -174,12 +151,7 @@ function _update60()
             if b~=nil then
                 if (b.animate or 0)>0 then
                     b.animate-=1
-                    -- b.dx=rnd(2)-1
-                    -- b.dy=rnd(2)-1
                 end
-                --     b.dx=0
-                --     b.dy=0
-                -- end
             end
         end
     end
@@ -271,7 +243,7 @@ function _update60()
         if mode=="move" then
             mode="slide"
             slide_cooldown=60
-            sfx(0)
+            sfx(0,1)
         end
     end
 
