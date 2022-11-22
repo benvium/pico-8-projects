@@ -94,7 +94,7 @@ function _draw()
 
     -- draw scores
     local scoreX=90
-    local scoreY=-10
+    local scoreY=-5
     local row=0
     for i=1,#block_types,3 do
         local b=block_types[i]
@@ -103,14 +103,13 @@ function _draw()
         -- cls(0)
         -- stop(tostring(b),0,0,col.pink2)
         if b.hide~=true then 
-            
             spr(b.t, scoreX, y*8+scoreY)
             print(score[i], scoreX+1, y*8+scoreY+9, col.black)
             print(score[i], scoreX+2, y*8+scoreY+9, col.white)
         end
         
         local b2=block_types[i+1]
-        if b2~=nil and b.hide~=true then
+        if b2~=nil and b2.hide~=true then
             spr(b2.t, scoreX+10, y*8+scoreY)
             print(score[i+1], scoreX+11, y*8+scoreY+9, col.black)
             print(score[i+1], scoreX+12, y*8+scoreY+9, col.white)

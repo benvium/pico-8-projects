@@ -15,16 +15,16 @@ food_types={
     },
     [3]={
         n=3,
-        name="ketchupburger",
+        name="salad",
         t=28,
-        ingredients={"bread","meat","ketchup"},
-        coins=2,
+        ingredients={"meat","leaf","cheese"},
+        coins=3,
     },
     [4]={
         n=4,
-        name="coke",
+        name="water",
         t=17,
-        ingredients={"coke"},
+        ingredients={"water"},
         coins=1
     },
     [5]={
@@ -33,5 +33,26 @@ food_types={
         t=19,
         ingredients={"fries"},
         coins=1
+    },
+    [6]={
+        n=6,
+        name="burgerfries",
+        t={26,19},
+        ingredients={"fries","bread","cheese","meat"},
+        coins=3
+    },
+    [7]={
+        n=7,
+        name="burgerdrink",
+        t={17,25},
+        ingredients={"water","bread","ketchup","meat"},
+        coins=3
+    },
+    [8]={
+        n=8,
+        name="fries ketchup",
+        t=24,
+        ingredients={"fries","ketchup"},
+        coins=3
     },
 }

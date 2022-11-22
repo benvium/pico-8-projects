@@ -116,7 +116,7 @@ function battle_update()
     for ob in all(baddies) do
         if ob.mode~="hungry" then
             ob:update()
-            ob.dx = min(1, ob.dx+0.02)
+            ob.dx = min(1, ob.dx+0.01)
             ob.x+=ob.dx
 
             if ob.x>128 then
@@ -148,13 +148,22 @@ function battle_draw()
         smoke_add(12,109,-0.25,col.white)
     end
 
+    -- van
     spr(44, 24, 0, 2,2)
 
     for b in all(baddies) do
         local flip=b.mode~="hungry" and b.dx>0.5
         spr(b.t, b.x, b.y, 1, 1, flip)
         if b.mode=="hungry" then
-            spr(b.food.t, b.x, -3)
+            if type(b.food.t)=="table" then
+               local x=b.x-(#b.food.t*4)+8+4
+               for ti=1,#b.food.t do
+                    local t=b.food.t[ti]
+                    spr(t, x-(ti-1)*8, -3, 1, 1)
+               end 
+            else
+                spr(b.food.t, b.x, -3)
+            end
         end
     end
     camera()

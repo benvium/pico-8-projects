@@ -4,11 +4,11 @@ block_name={
     ["cheese"]=1,
     ["leaf"]=2,
     ["bread"]=3,
-    ["coke"]=4,
+    ["water"]=4,
     ["ketchup"]=5,
     ["fries"]=6,
-    ["meat"]=7,
-    ["coin"]=8,
+    ["coin"]=7,
+    ["meat"]=8,
 }
 
 block_sfx={
@@ -41,7 +41,7 @@ block_types={
         c=col.brown
     },
     [4]={
-        -- coke
+        -- water
         n=4,
         t=17,
         sfx=2,
@@ -62,18 +62,19 @@ block_types={
         c=col.yellow
     },
     [7]={
-        -- meat
-        n=7,
-        t=5,
-        sfx=2,
-        c=col.pink2
-    },
-    [8]={
         -- coin
-        n=8,
+        n=7,
         t=54,
         sfx=3,
         c=col.orange,
+        hide=true,
+    },
+    [8]={
+        -- meat
+        n=8,
+        t=5,
+        sfx=2,
+        c=col.pink2
     },
     [9]={
         -- clock
@@ -84,6 +85,7 @@ block_types={
         get=function(self, score)
             timer=min(timer+300*score,max_timer)
         end,
+        hide=true,
     },
 }
 

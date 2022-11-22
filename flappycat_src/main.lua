@@ -75,6 +75,16 @@ function _init()
         end
     }
     add(obs,p)
+
+    -- force reload map
+    reload(0x1000, 0x1000, 0x2000)
+
+    -- 
+    for x=0,127 do
+        for y=0,16 do
+            mset(x,y,mget(x,y+48))
+        end
+    end
 end
 
 function _update60()

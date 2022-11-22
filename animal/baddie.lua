@@ -61,7 +61,7 @@ end
 function chicken_explode(self)
     del(obs,self)
     del(baddies,self)
-    offset=0.1
+    offset=0.3
 
     local tx=flr((self.x+3)/8)
     local ty=flr((self.y+3)/8)
@@ -92,10 +92,10 @@ function chicken_explode(self)
             if d<48 then
                 b.health-=75
                 if d<32 then
-                    b.health-=150
+                    b.health-=125
 
                     if d<16 then
-                        b.health-=300
+                        b.health-=225
                     end
                 end
                 -- move chicken away

@@ -36,7 +36,7 @@ function _init()
     exploded=0
     
 
-    dtb_disp("feed chickens, but watch out if they get too hungry! pick up and drop apples with ❎ ", function()
+    dtb_disp("feed ducks, but watch out if they get too hungry! pick up and drop apples with ❎ ", function()
         mode="game"
     end)
 
@@ -108,11 +108,11 @@ function _draw()
         local py=32
         rectfill(px,py,96,66,col.black)
         rectfill(px+2,py+2,94,64,col.blue1)
-        print("exploding",px+8,py+8,col.black)
-        print("exploding",px+8,py+8+1,col.red1)
-        print("exploding",px+8,py+8+2,col.red2)
-        print("chickens",px+20-1,py+20,col.brown)
-        print("chickens",px+20,py+20,col.yellow)
+        print("dangerous",px+8,py+8,col.black)
+        print("dangerous",px+8,py+8+1,col.red1)
+        print("dangerous",px+8,py+8+2,col.red2)
+        print("ducks",px+32-1,py+20,col.brown)
+        print("ducks",px+32,py+20,col.yellow)
     end
 end
 
@@ -188,7 +188,7 @@ function end_game()
     end
     mode="end"
     if #baddies<=0 then
-        dtb_disp("all your chickens exploded!")
+        dtb_disp("all your ducks exploded!")
     else
         dtb_disp("you got exploded! stay away from explosions!")
     end
