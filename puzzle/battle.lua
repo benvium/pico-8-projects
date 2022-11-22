@@ -1,3 +1,6 @@
+-- time you get per baddie
+timer_per_baddie=240
+
 baddie_types={
     [1]={
         t=43,
@@ -51,14 +54,26 @@ function battle_check_ingredients()
         end
     end
 
+
     if #ob.food.ingredients>0 then
         printh("baddie needs "..tostring(ob.food.ingredients))
         return false
     else
         printh("baddie defeated")
-        del(baddies,ob)
+
+        -- throws a coin
+        particle_add(ob.x-6,ob.y+92,
+        -1,-1,
+        53,0,24,function(self) 
+            sfx(1,0)
+            -- todo add score based on food type
+            score[block_name["coin"]]+=ob.food.coins
+        end)
+
+        timer=min(max_timer, timer+timer_per_baddie)
+
+        ob.mode="happy"
         baddie_current=nil
-        smoke_add(ob.x+4,ob.y+4,-0.25,col.white)
         sfx(2,0)
         battle_can_move=true
         return true
@@ -75,27 +90,37 @@ function battle_update()
             battle_add_person()
         end
         for ob in all(baddies) do
-            ob.x-=0.25
-            ob:update()
-            if ob.x<-10 then
-                del(baddies,ob)
+            if ob.mode=="hungry" then
+                ob.x-=0.25
+                ob:update()
+
+                local have_stopped=false
+                if ob.x>10 and ob.x<48 then
+                    if battle_can_move then
+                        battle_can_move=false
+
+                        have_stopped=true
+                    end
+
+                    baddie_current=ob
+
+                    local defeated = battle_check_ingredients()
+                    if have_stopped and not defeated then
+                        sfx(15,1)
+                    end
+                end
             end
+        end
+    end
+    -- can still update 'fed' baddies even when stopped
+    for ob in all(baddies) do
+        if ob.mode~="hungry" then
+            ob:update()
+            ob.dx = min(1, ob.dx+0.02)
+            ob.x+=ob.dx
 
-            local have_stopped=false
-
-            if ob.x>10 and ob.x<48 then
-                if battle_can_move then
-                    battle_can_move=false
-
-                    have_stopped=true
-                end
-
-                baddie_current=ob
-
-                local defeated = battle_check_ingredients()
-                if have_stopped and not defeated then
-                    sfx(15,1)
-                end
+            if ob.x>128 then
+                del(baddies,ob)
             end
         end
     end
@@ -103,8 +128,9 @@ end
 
 function battle_add_person()
     local data=rnd(baddie_types)
-    data = clone(data)
+    data =clone(data)
     data.x=128
+    data.dx=0
     data.y=8
     data.food=clone(rnd(food_types))
     data.food.ingredients=clone(data.food.ingredients)
@@ -119,14 +145,17 @@ function battle_draw()
 
     -- van smokes when out
     if flr(frame/10)==0 and battle_can_move then
-        smoke_add(8,100,-0.25,col.white)
+        smoke_add(12,109,-0.25,col.white)
     end
 
     spr(44, 24, 0, 2,2)
 
     for b in all(baddies) do
-        spr(b.t, b.x, b.y)
-        spr(b.food.t, b.x, -3)
+        local flip=b.mode~="hungry" and b.dx>0.5
+        spr(b.t, b.x, b.y, 1, 1, flip)
+        if b.mode=="hungry" then
+            spr(b.food.t, b.x, -3)
+        end
     end
     camera()
 end

@@ -31,21 +31,30 @@ function _init()
 
     -- other objects to draw/update each frame
     obs={}
+
+  
 end
 
 function _draw()
     cls(col.blue1)
     camera(0,0)
-    map(0,0,-4,-4,17,14)
 
-    camera(-2*8-1+4, -2*8-1+4)
+    clip(0,0,128,128-28)
+    map(0,0,-8,-6,17,14.5)
+    clip()
 
-    rect(-2,-2,8*block_size-1,8*block_size-1,col.black)
-    rect(-2-8,-2-8,9*block_size-3,9*block_size-3,col.black)
+    -- camera
+    camera(-8, -11)
+
+    -- inner border
+    rect(-2,-2,8*block_size-1,8*block_size-1,col.blue1)
+
+    -- outer border
+    rect(-9,-10,9*block_size-3,9*block_size-3,col.black)
 
     -- CLIP TO GAME AREA
-    clip(2*8-4,2*8-4,8*block_size,8*block_size)
-    rectfill(0-2,0-2,8*block_size,8*block_size,col.black)
+    clip(7,10,8*block_size,8*block_size)
+    rectfill(-2,-2,8*block_size,8*block_size,col.black)
     -- cls(col.black)
 
     if mode=="slide" then
@@ -84,26 +93,53 @@ function _draw()
     end
 
     -- draw scores
-    for i=1,#block_types do
+    local scoreX=90
+    local scoreY=-10
+    local row=0
+    for i=1,#block_types,3 do
         local b=block_types[i]
-        spr(b.t, 90, i*8+1-20)
-        print(score[i], 100, 2+i*8-20, col.white)
+        local y=flr(i/3)*2
+        -- local y=flr(row)*3
+        -- cls(0)
+        -- stop(tostring(b),0,0,col.pink2)
+        if b.hide~=true then 
+            
+            spr(b.t, scoreX, y*8+scoreY)
+            print(score[i], scoreX+1, y*8+scoreY+9, col.black)
+            print(score[i], scoreX+2, y*8+scoreY+9, col.white)
+        end
+        
+        local b2=block_types[i+1]
+        if b2~=nil and b.hide~=true then
+            spr(b2.t, scoreX+10, y*8+scoreY)
+            print(score[i+1], scoreX+11, y*8+scoreY+9, col.black)
+            print(score[i+1], scoreX+12, y*8+scoreY+9, col.white)
+        end
+        local b3=block_types[i+2]
+        if b3~=nil and b3.hide~=true then
+            spr(b3.t, scoreX+20, y*8+scoreY)
+            print(score[i+2], scoreX+21, y*8+scoreY+9, col.black)
+            print(score[i+2], scoreX+22, y*8+scoreY+9, col.white)
+        end
     end
     camera(0,0)
 
     -- draw order
-    print("order", 103,61,col.grey1)
+    print("order", 103,59,col.grey1)
     if baddie_current~=nil then
         -- stop(tostring(baddie_current.food))
         local food_n = baddie_current.food.n
 
         local origFood = food_types[food_n]
 
-        local y = 69
+        local y = 66
+        local x = 104
         for ing in all(origFood.ingredients) do
             local n = block_name[ing]
             local block = block_types[n]
-            spr(block.t, 103, y)
+            -- background
+            -- spr(55, x, y)
+            spr(block.t, x, y)
 
             local isDone=true
             for ingLeft in all(baddie_current.food.ingredients) do
@@ -112,9 +148,9 @@ function _draw()
                 end
             end
             if isDone then
-                spr(36,103+10,y)
+                spr(36,x+10,y)
             else
-                spr(35,103+10,y)
+                spr(35,x+10,y)
             end
 
             y+=8
@@ -129,6 +165,22 @@ function _draw()
     for ob in all(obs) do
         ob:draw()
     end
+
+    -- timer
+    rectfill(0,128-28,128,128-28+3,col.black)
+    -- fill red based on timer / max_timer
+    local timerFill = flr(timer/max_timer*128)
+    rectfill(0,128-28,timerFill,128-28+3,col.red1)
+    rectfill(0,128-28,timerFill,128-28+2,col.red2)
+    rectfill(0,128-28,timerFill,128-28,col.pink1)
+
+    -- draw money
+    local coin=block_types[block_name["coin"]]
+    local coinX=24
+    spr(coin.t, coinX, 98)
+    print(score[block_name["coin"]], coinX+10, 100, col.black)
+    print(score[block_name["coin"]], coinX+11, 100, col.white)
+    
 end
 
 function _update60()
@@ -261,4 +313,14 @@ function _update60()
     for ob in all(obs) do
         ob:update()
     end
+
+    timer-=1
+    if timer<=0 then
+        game_end()
+    end
+end
+
+function game_end()
+    -- print("game over please finish this")
+    _init()
 end

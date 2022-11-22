@@ -4,29 +4,34 @@ food_types={
         name="cheeseburger",
         t=26,
         ingredients={"bread","cheese","meat"},
+        coins=2,
     },
     [2]={
         n=2,
         name="saladburger",
         t=27,
         ingredients={"bread","cheese","leaf"},
+        coins=2,
     },
     [3]={
         n=3,
         name="ketchupburger",
         t=28,
         ingredients={"bread","meat","ketchup"},
+        coins=2,
     },
     [4]={
         n=4,
         name="coke",
         t=17,
         ingredients={"coke"},
+        coins=1
     },
     [5]={
         n=5,
-        name="water",
+        name="fries",
         t=19,
-        ingredients={"water"},
+        ingredients={"fries"},
+        coins=1
     },
 }

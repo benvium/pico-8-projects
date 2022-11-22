@@ -1,16 +1,21 @@
+max_timer=4800
+
 block_name={
     ["cheese"]=1,
     ["leaf"]=2,
     ["bread"]=3,
     ["coke"]=4,
     ["ketchup"]=5,
-    ["water"]=6,
+    ["fries"]=6,
     ["meat"]=7,
+    ["coin"]=8,
 }
 
 block_sfx={
     [1]={3,7,8},
     [2]={10,11,12},
+    [3]={1,1,1},
+    [4]={16,16,16} --clock
 }
 
 block_types={
@@ -40,7 +45,7 @@ block_types={
         n=4,
         t=17,
         sfx=2,
-        c=col.pink1
+        c=col.blue3
     },
     [5]={
         -- ketchup
@@ -50,11 +55,11 @@ block_types={
         c=col.red2,
     },
     [6]={
-        -- water
+        -- chips
         n=6,
         t=19,
         sfx=1,
-        c=col.blue3
+        c=col.yellow
     },
     [7]={
         -- meat
@@ -62,6 +67,23 @@ block_types={
         t=5,
         sfx=2,
         c=col.pink2
+    },
+    [8]={
+        -- coin
+        n=8,
+        t=54,
+        sfx=3,
+        c=col.orange,
+    },
+    [9]={
+        -- clock
+        n=9,
+        t=21,
+        sfx=4,
+        c=col.white,
+        get=function(self, score)
+            timer=min(timer+300*score,max_timer)
+        end,
     },
 }
 
@@ -89,6 +111,9 @@ function board_init()
 
     -- used to trigger checking for lines *after* falling has finished
     falling_cooldown=0
+
+    -- 
+    timer=max_timer
 end
 
 function check_lines_vertical(n,x,y,blocks)
@@ -305,59 +330,51 @@ end
 
 function board_check_for_lines()
     local blockKillCount=0
-    local allBlocksKilled={}
     local fx
     -- see if we've made any lines
     for x=0,7 do
         for y=0,7 do
             local b=board[x][y]
-            -- reset dx/dy just in case
             if b~=nil then
-                -- b.dx=0
-                -- b.dy=0
                 local lineBlocks = {{x=x,y=y}}
                 local toAdd = check_lines_horizontal(b.n,x,y,lineBlocks)
 
                 if toAdd>0 then
-                    for block in all(lineBlocks) do
-                        if board[block.x][block.y]~=nil then
-                            local n = board[block.x][block.y].n
-                            block_kill(block.x, block.y)
-                            blockKillCount+=1
-                            add(allBlocksKilled, {x=block.x, y=block.y, n=n})
-                        end
-                    end
-                    score[b.n]=(score[b.n] or 0)+toAdd
-
-                    -- stop(tostring(b),0,0,col.pink)
-                    board_collect_popover(b.n,toAdd,x*block_size+12)
-
-                    block_fx(b.n,toAdd)
+                    blockKillCount = battle_add_scores(x,y,b,toAdd, lineBlocks, blockKillCount)
                 end
 
                 local lineBlocksCol = {{x=x,y=y}}
                 toAdd = check_lines_vertical(b.n,x,y,lineBlocksCol)
                 if toAdd>0 then
-                    for block in all(lineBlocksCol) do
-                        if board[block.x][block.y]~=nil then
-                            local n = board[block.x][block.y].n
-                            block_kill(block.x, block.y)
-                            blockKillCount+=1
-                            add(allBlocksKilled, {x=block.x, y=block.y, n=n})
-                        end
-                    end
-                    score[b.n]=(score[b.n] or 0)+toAdd
-
-                    board_collect_popover(b.n,toAdd,x*block_size+12)
-
-                    block_fx(b.n,toAdd)
+                    blockKillCount = battle_add_scores(x,y,b,toAdd, lineBlocksCol, blockKillCount)
                 end
             end
         end
     end
     if blockKillCount>0 then
-        
-
-        battle_check_ingredients()
+       battle_check_ingredients()
     end
+end
+
+function battle_add_scores(x,y,b,toAdd, lineBlocks, blockKillCount)
+    for block in all(lineBlocks) do
+        if board[block.x][block.y]~=nil then
+            local n = board[block.x][block.y].n
+            block_kill(block.x, block.y)
+            blockKillCount+=1
+        end
+    end
+    score[b.n]=min(99, (score[b.n] or 0)+toAdd)
+
+    board_collect_popover(b.n,toAdd,x*block_size+12)
+
+    block_fx(b.n,toAdd)
+
+    -- run custom get function (e.g. add time, add coins)
+    local bt = block_types[b.n]
+    if bt and bt.get then
+        bt:get(toAdd)
+    end
+
+    return blockKillCount
 end
