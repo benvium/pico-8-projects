@@ -3,22 +3,13 @@ timer_per_baddie=240
 
 baddie_types={
     [1]={
-        t=43,
-        mode="hungry",
-        update=function()
-        end
+        t={14,15},
     },
     [2]={
-        t=38,
-        mode="hungry",
-        update=function()
-        end
+        t={30,31},
     },
     [3]={
-        t=57,
-        mode="hungry",
-        update=function()
-        end
+        t={46,47},    
     },
 }
 
@@ -61,12 +52,14 @@ function battle_check_ingredients()
     else
         printh("baddie defeated")
 
+        customer_count+=1
+
         -- throws a coin
         particle_add(ob.x-6,ob.y+92,
-        -1,-1,
+        -0.8,-1,
         53,0,24,function(self) 
             sfx(1,0)
-            -- todo add score based on food type
+            -- add score based on food type
             score[block_name["coin"]]+=ob.food.coins
         end)
 
@@ -92,7 +85,6 @@ function battle_update()
         for ob in all(baddies) do
             if ob.mode=="hungry" then
                 ob.x-=0.25
-                ob:update()
 
                 local have_stopped=false
                 if ob.x>10 and ob.x<48 then
@@ -115,7 +107,6 @@ function battle_update()
     -- can still update 'fed' baddies even when stopped
     for ob in all(baddies) do
         if ob.mode~="hungry" then
-            ob:update()
             ob.dx = min(1, ob.dx+0.01)
             ob.x+=ob.dx
 
@@ -128,10 +119,11 @@ end
 
 function battle_add_person()
     local data=rnd(baddie_types)
-    data =clone(data)
+    data=clone(data)
     data.x=128
     data.dx=0
     data.y=8
+    data.mode="hungry"
     data.food=clone(rnd(food_types))
     data.food.ingredients=clone(data.food.ingredients)
     add(baddies, data)
@@ -151,10 +143,19 @@ function battle_draw()
     -- van
     spr(44, 24, 0, 2,2)
 
+    -- baddies
     for b in all(baddies) do
         local flip=b.mode~="hungry" and b.dx>0.5
-        spr(b.t, b.x, b.y, 1, 1, flip)
+
+        local t=b.mode~="hungry" and frame<30 and 2 or 1
+
+        -- draw person
+        spr(b.t[t], b.x, b.y, 1, 1, flip)
+
         if b.mode=="hungry" then
+            -- draw the food they want above their head
+
+            -- multiple item case
             if type(b.food.t)=="table" then
                local x=b.x-(#b.food.t*4)+8+4
                for ti=1,#b.food.t do
@@ -162,6 +163,7 @@ function battle_draw()
                     spr(t, x-(ti-1)*8, -3, 1, 1)
                end 
             else
+            -- single item case
                 spr(b.food.t, b.x, -3)
             end
         end

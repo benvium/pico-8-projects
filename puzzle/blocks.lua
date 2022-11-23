@@ -29,7 +29,7 @@ block_types={
         n=2,
         t=3,
         sfx=2,
-        c=col.green1
+        c=col.green2
     },
     [3]={
         -- bread
