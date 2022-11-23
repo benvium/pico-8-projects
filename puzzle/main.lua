@@ -175,10 +175,11 @@ function _draw()
 
     -- draw money
     local coin=block_types[block_name["coin"]]
-    local coinX=24
-    spr(coin.t, coinX, 98)
-    print(score[block_name["coin"]], coinX+10, 100, col.black)
-    print(score[block_name["coin"]], coinX+11, 100, col.white)
+    local coinX=8
+    local coinY=107
+    spr(coin.t, coinX, coinY-2)
+    print(score[block_name["coin"]], coinX+10, coinY, col.black)
+    print(score[block_name["coin"]], coinX+11, coinY, col.white)
     
 end
 

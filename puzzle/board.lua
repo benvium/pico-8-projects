@@ -1,93 +1,5 @@
 max_timer=4800
 
-block_name={
-    ["cheese"]=1,
-    ["leaf"]=2,
-    ["bread"]=3,
-    ["water"]=4,
-    ["ketchup"]=5,
-    ["fries"]=6,
-    ["coin"]=7,
-    ["meat"]=8,
-}
-
-block_sfx={
-    [1]={3,7,8},
-    [2]={10,11,12},
-    [3]={1,1,1},
-    [4]={16,16,16} --clock
-}
-
-block_types={
-    [1]={
-        -- cheese
-        n=1,
-        t=2,
-        sfx=1,
-        c=col.yellow
-    },
-    [2]={
-        -- leaf
-        n=2,
-        t=3,
-        sfx=2,
-        c=col.green1
-    },
-    [3]={
-        -- bread
-        n=3,
-        t=4,
-        sfx=1,
-        c=col.brown
-    },
-    [4]={
-        -- water
-        n=4,
-        t=17,
-        sfx=2,
-        c=col.blue3
-    },
-    [5]={
-        -- ketchup
-        n=5,
-        t=18,
-        sfx=2,
-        c=col.red2,
-    },
-    [6]={
-        -- chips
-        n=6,
-        t=19,
-        sfx=1,
-        c=col.yellow
-    },
-    [7]={
-        -- coin
-        n=7,
-        t=54,
-        sfx=3,
-        c=col.orange,
-        hide=true,
-    },
-    [8]={
-        -- meat
-        n=8,
-        t=5,
-        sfx=2,
-        c=col.pink2
-    },
-    [9]={
-        -- clock
-        n=9,
-        t=21,
-        sfx=4,
-        c=col.white,
-        get=function(self, score)
-            timer=min(timer+300*score,max_timer)
-        end,
-        hide=true,
-    },
-}
 
 
 function board_init()
@@ -320,14 +232,6 @@ function shift_col(x,dy)
     end
 end
 
-function block_fx(n,toAdd)
-    local fx1 = block_types[n] and block_types[n].sfx or nil
-    if fx1==nil then return end
-    local fx2=block_sfx[fx1]
-    if fx2==nil then return end
-    local fx3=fx2[toAdd]
-    sfx(fx3,0)
-end
 
 
 function board_check_for_lines()
@@ -366,7 +270,7 @@ function battle_add_scores(x,y,b,toAdd, lineBlocks, blockKillCount)
             blockKillCount+=1
         end
     end
-    score[b.n]=min(99, (score[b.n] or 0)+toAdd)
+    score[b.n]=(score[b.n] or 0)+toAdd
 
     board_collect_popover(b.n,toAdd,x*block_size+12)
 
