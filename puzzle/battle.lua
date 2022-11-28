@@ -11,6 +11,9 @@ baddie_types={
     [3]={
         t={46,47},    
     },
+    [4]={
+        t={62,63},    
+    },
 }
 
 
@@ -131,7 +134,7 @@ end
 
 function battle_draw()
     local bY=13*8+4
-    camera(0,-bY)
+    screen_shake(0,-bY)
     map(0,14,bx-128,0,16,3)
     map(0,14,bx,0,16-abs(bx/8)+1,3)
 
@@ -141,7 +144,11 @@ function battle_draw()
     end
 
     -- van
-    spr(44, 24, 0, 2,2)
+    if flr(frame/2)<6 and battle_can_move then
+        spr(42, 24, 0, 2,2)
+    else
+        spr(44, 24, 0, 2,2)
+    end
 
     -- baddies
     for b in all(baddies) do
@@ -168,5 +175,5 @@ function battle_draw()
             end
         end
     end
-    camera()
+    screen_shake()
 end

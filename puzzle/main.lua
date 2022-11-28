@@ -5,7 +5,16 @@ block_size=10
 function _init()
     board={}
 
+    -- # of served customers
+    customer_count=0 
+
     board_init()
+
+    screen_shake_size=0
+
+    -- temp music off!
+    music(1)
+    -- music(-1)
 
     -- tile coords of 'player'
     p={x=4,y=4}
@@ -14,7 +23,7 @@ function _init()
 
     mode="move" -- or "slide", or "end"
 
-
+    -- exit slide mode after this many frames
     slide_cooldown=nil
 
     frame=0
@@ -32,12 +41,7 @@ function _init()
     board_check_for_lines()
 
     -- other objects to draw/update each frame
-    obs={}
-
-    -- # of served customers
-    customer_count=0 
-
-  
+    obs={}  
 end
 
 function _draw()
@@ -75,14 +79,15 @@ function _draw()
 
     else
         cls(col.blue1)
-        camera(0,0)
+
+        screen_shake(0,0)
 
         clip(0,0,128,128-28)
         map(0,0,-9,-6,17,14.5)
         clip()
 
-        -- camera
-        camera(-8, -11)
+        -- camera set to board origin
+        screen_shake(-8, -11)
 
         -- inner border
         rect(-2,-2,8*block_size-1,8*block_size-1,col.blue1)
@@ -103,9 +108,9 @@ function _draw()
                 fillp(0b1010010110100101)        
             end
             -- checkedboard pattern - animated ^ 
-            rectfill(p.x*block_size-1,-1,(p.x+1)*(block_size)-2,8*block_size-2,col.blue1)
+            rectfill(p.x*block_size-1,-1,(p.x+1)*(block_size)-2,8*block_size-2,col.grey1)
             
-            rectfill(-1,p.y*block_size-1,8*block_size-2, (p.y+1)*(block_size)-2,col.blue1)
+            rectfill(-1,p.y*block_size-1,8*block_size-2, (p.y+1)*(block_size)-2,col.grey1)
         end
         fillp()
 
@@ -200,7 +205,7 @@ function _draw()
 
         battle_draw()
 
-        camera(0,0)
+        screen_shake(0,0)
 
         -- all other objects
         for ob in all(obs) do
@@ -273,6 +278,7 @@ function _update60()
 
             p.x=max(0,min(7,p.x))
             p.y=max(0,min(7,p.y))
+
         elseif mode=="slide" then
             if btnp(0) or btnp(1) then
                 local isLeft=btnp(0)
@@ -347,11 +353,29 @@ function _update60()
         end
 
         -- enter slide mode
-        if btn(4) or btn(5) then 
+        if btnp(4) or btnp(5) then 
             if mode=="move" then
-                mode="slide"
-                slide_cooldown=60
-                sfx(0,1)
+
+                -- if on a special block, activate it, otherwise enter slide mode
+                local special=false
+                local b = board[p.x][p.y]
+                if b and b.n~=nil then
+                    local info = block_types[b.n]
+                    -- stop(tostring(info))
+                    if info~=nil then
+                        -- stop(tostring(info.touch))
+                        if info.touch~=nil then
+                            info:touch(p.x,p.y)
+                            special=true
+                        end
+                    end
+                end
+
+                if not special then
+                    mode="slide"
+                    slide_cooldown=60
+                    sfx(0,1)
+                end
             end
         end
 
@@ -381,4 +405,6 @@ function game_end()
     -- print("game over please finish this")
     -- _init()
     mode="end"
+    music(0)
+    -- sfx(20,1) -- end jingle
 end

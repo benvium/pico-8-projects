@@ -14,9 +14,9 @@ function board_init()
     
     for x=0,7 do
         for y=0,7 do
-            local info = rnd(block_types)
+            local n = get_next_block_n(x,y)
             board[x][y]={
-                n=info.n, -- block type number (index into block_types)
+                n=n,
                 dx=0,
                 dy=0
             }
@@ -84,6 +84,9 @@ end
 
 
 function board_fall(x)
+    -- don't fall on current slide position (causes odd glitches)
+    -- if mode=="slide" and p.x==x then return end
+
     local moved=false
     for y=-1,7 do
         local b=board[x][y]
@@ -91,13 +94,19 @@ function board_fall(x)
             -- look below
             local ab=board[x][y+1]
             if ab==nil then
-                -- otherwise..
-                b.dy+=1
-                if b.dy%block_size==0 then
-                    board[x][y+1]=b
-                    board[x][y]=nil
+
+                if mode=="slide" and y+1==p.y then 
+                    -- don't fall on current slide position (causes odd glitches)
                     b.dy=0
-                    moved=true
+                else
+                    -- otherwise..
+                    b.dy+=1
+                    if b.dy%block_size==0 then
+                        board[x][y+1]=b
+                        board[x][y]=nil
+                        b.dy=0
+                        moved=true
+                    end
                 end
             end
         end
@@ -106,7 +115,9 @@ function board_fall(x)
     -- check to see if we should drop new items at the topmost
     for x=0,7 do
         if board[x][0]==nil and board[x][-1]==nil then
-            board[x][-1]={n=rnd(block_types).n, dx=0,dy=0}
+            local n=get_next_block_n(x,-1)
+            local block={n=n, dx=0, dy=0}
+            board[x][-1]=block
             moved=true
         end
     end
@@ -126,6 +137,7 @@ end
 
 
 function block_kill(x,y)
+    if x<-1 or x>8 or y<-1 or y>8 then return end
     local item=board[x][y]
     board[x][y]=nil
 

@@ -10,6 +10,18 @@ p2 = {
     y=110,
 }
 
+p3 = {
+    x=16,
+    y=48,
+    dx=1,
+    hitbox={
+        x=0,
+        y=0,
+        w=16,
+        h=24,
+    }
+}
+
 b = {
     x=64,
     y=130,
@@ -63,6 +75,9 @@ function _draw()
     -- p2
     spr(34,p2.x,p2.y,2,2)
 
+    -- p3
+    spr(16,p3.x,p3.y,2,2)
+
     print("home: "..score.h.." away:"..score.a, 0,120,7)
 end
 
@@ -73,6 +88,15 @@ function _update60()
     if btn(1) then
         p.x=min(112,p.x+1)
     end
+
+    -- move p3 around
+    p3.x+=p3.dx
+    if p3.x>=112 then
+        p3.dx=-1
+    elseif p3.x<=16 then
+        p3.dx=1
+    end
+    
 
     --ball
     
@@ -99,6 +123,12 @@ function _update60()
         w=4,
         h=4
     }
+    local p3col={
+        x=p3.x,
+        y=p3.y,
+        w=4,
+        h=4,
+    }
 
     -- save
     if intersects(bcol,pcol) then
@@ -106,6 +136,14 @@ function _update60()
         b.dx=-b.dx
         sfx(0)
         score.h+=1
+    end
+
+    -- hit defender
+    if intersects(bcol,p3col) then
+        b.dy=3
+        b.dx=-b.dx
+        -- sfx(0)
+        -- score.h+=1
     end
 
     -- goal

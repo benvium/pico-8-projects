@@ -76,6 +76,9 @@ block_types={
     },
     [9]={
         -- clock
+        condition=function()
+            return (customer_count or 0)>3
+        end,
         n=9,
         t=21,
         sfx=4,
@@ -85,7 +88,94 @@ block_types={
         end,
         hide=true,
     },
+    [10]={
+        -- bomb
+        -- only add bombs after 10 customers
+        condition=function()
+          return (customer_count or 0)>10 and rnd(4)<1
+        end,
+        n=10,
+        t=1,
+        c=col.white,
+        sfx=1,
+        hide=true,
+        get=function(self)
+            -- if you match bombs, explode whole board..
+            for x=0,7 do
+                for y=0,7 do
+                    block_kill(x,y)
+                end
+            end
+
+            -- four explosions
+            self:touch(2,2)
+            self:touch(5,5)
+            self:touch(2,5)
+            self:touch(5,2)
+        end,
+        touch=function(self,x,y)
+            -- explode
+            sfx(17,0)
+            -- double channel for loud!
+            sfx(17,2)
+
+            local toKill={
+                {x=x,y=y},
+                {x=x+1,y=y},
+                {x=x-1,y=y},
+                {x=x,y=y+1},
+                {x=x,y=y-1},
+                {x=x+2,y=y},
+                {x=x-2,y=y},
+                {x=x,y=y+2},
+                {x=x,y=y-2},
+                {x=x+1,y=y+1},
+                {x=x-1,y=y-1},
+                {x=x+1,y=y-1},
+                {x=x-1,y=y+1},
+                {x=x+2,y=y+1},
+                {x=x-2,y=y-1},
+                {x=x+2,y=y-1},
+                {x=x-2,y=y+1},
+            }
+
+            screen_shake_size=0.2
+
+            for o in all(toKill) do
+                block_kill(o.x,o.y)
+            end
+
+            for i=0,20 do
+                particle_add(
+                    (x+0.5)*block_size, 
+                    (y+0.5)*block_size, 
+                    rnd(4)-2,
+                    rnd(4)-2-1,
+                    37,
+                    i/2,
+                    50)
+
+                smoke_add(
+                    x*block_size+rnd(block_size), 
+                    y*block_size+rnd(block_size),
+                    rnd(2)-1,
+                    rnd({col.red1,col.red2,col.yellow,col.orange}),
+                    i/2,
+                    5)
+            end
+        end,
+    }
 }
+
+function get_next_block_n(x,y)
+    local n=rnd(block_types).n
+
+    while block_types[n].condition~=nil and not block_types[n]:condition(x,y) do
+        n=rnd(block_types).n
+    end
+
+    return n
+end
 
 
 -- play the sfx for a block - can be different for lines of 3,4,5 
