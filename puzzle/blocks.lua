@@ -66,6 +66,10 @@ block_types={
         sfx=3,
         c=col.orange,
         hide=true,
+        -- clock
+        condition=function()
+            return (customer_count or 0)>3
+        end,
     },
     [8]={
         -- meat
@@ -77,14 +81,17 @@ block_types={
     [9]={
         -- clock
         condition=function()
-            return (customer_count or 0)>3
+            return (customer_count or 0)>4
         end,
         n=9,
         t=21,
         sfx=4,
         c=col.white,
         get=function(self, score)
-            timer=min(timer+300*score,max_timer)
+            -- time bonuses reduce as you go
+            local baseTime=300
+            baseTime=max(50, baseTime-(customer_count or 0)*5)
+            timer=min(timer+baseTime*score,max_timer)
         end,
         hide=true,
     },
@@ -164,7 +171,30 @@ block_types={
                     5)
             end
         end,
-    }
+    },
+    [11]={
+        -- box (does nothing)
+        n=11,
+        t=38,
+        condition=function() 
+            return (customer_count or 0)>20
+        end,
+        -- todo maybe give you a random item?
+        sfx=4,
+        c=col.brown,
+        hide=true,
+    },
+    [12]={
+        -- ice cube (does nothing right now)
+        n=12,
+        t=69,
+        condition=function() 
+            return (customer_count or 0)>35
+        end,
+        sfx=4,
+        c=col.pink,
+        hide=true,
+    },
 }
 
 function get_next_block_n(x,y)

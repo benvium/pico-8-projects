@@ -1,8 +1,9 @@
 
+cartdata("benvium_burgerslider_v1")
 
 block_size=10
 
-function _init()
+function game_init()
     board={}
 
     -- # of served customers
@@ -12,21 +13,18 @@ function _init()
 
     screen_shake_size=0
 
-    -- temp music off!
     music(1)
-    -- music(-1)
 
     -- tile coords of 'player'
     p={x=4,y=4}
 
     particles={}
 
-    mode="move" -- or "slide", or "end"
+    mode="move" -- or "move", "slide", or "end"
 
     -- exit slide mode after this many frames
     slide_cooldown=nil
 
-    frame=0
 
     slide_target=nil
     -- or {dir="x", d=1}
@@ -41,7 +39,13 @@ function _init()
     board_check_for_lines()
 
     -- other objects to draw/update each frame
-    obs={}  
+    obs={}
+end
+
+function _init()
+    frame=0
+    mode="start" -- or "move", "slide", or "end"
+    music(19,1000)
 end
 
 function _draw()
@@ -76,7 +80,25 @@ function _draw()
         print(money, line1X-1, line1Y, col.black)
         print(money, line1X+1, line1Y, col.black)
         print(money.." earned", line1X, line1Y, col.white)
-
+    elseif mode=="start" then
+        cls(col.blue1)
+        map(0, 48, 0, 0, 16, 16)
+        local tx=14
+        local ty=32
+        local dx=sin(frame/60)*6
+        obprint("burger slider", tx, ty+4, col.blue1, col.black, 2)
+        obprint("burger slider", tx+dx/4, ty+2, col.grey1, col.black, 2)
+        obprint("burger slider", tx+dx/2, ty, col.white, col.black, 2)
+        tx=18
+        ty=100
+        line(0,88,127,88, col.black)
+        rectfill(tx-4,ty-4,tx+90,ty+18, col.gray1)
+        rect(tx-4,ty-4,tx+90,ty+18, col.grey2)
+        print("press ❎ to start", tx, ty-1, col.black)
+        print("or 🅾️ for instructions", tx, ty+10-1, col.black)
+        print("press ❎ to start", tx, ty, col.white)
+        print("or 🅾️ for instructions", tx, ty+10, col.white)
+        
     else
         cls(col.blue1)
 
@@ -245,6 +267,13 @@ function _update60()
         if btnp(4) then
             _init()
         end
+    elseif mode=="start" then
+        if btnp(4) then
+            --mode="play"
+            -- todo instructions
+        elseif btnp(5) then
+            game_init()
+        end
     else
 
         if flr(rnd(120))==0 then
@@ -374,7 +403,7 @@ function _update60()
                 if not special then
                     mode="slide"
                     slide_cooldown=60
-                    sfx(0,1)
+                    sfx(0,0)
                 end
             end
         end

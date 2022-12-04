@@ -4,6 +4,7 @@ food_types={
         name="cheeseburger",
         t=26,
         ingredients={"bread","cheese","meat"},
+        condition=function() return customer_count>3 end,
         coins=2,
     },
     [2]={
@@ -11,6 +12,7 @@ food_types={
         name="saladburger",
         t=27,
         ingredients={"bread","cheese","leaf"},
+        condition=function() return customer_count>2 end,
         coins=2,
     },
     [3]={
@@ -18,6 +20,7 @@ food_types={
         name="salad",
         t=28,
         ingredients={"meat","leaf","cheese"},
+        condition=function() return customer_count>3 end,
         coins=3,
     },
     [4]={
@@ -39,18 +42,21 @@ food_types={
         name="burgerfries",
         t={26,19},
         ingredients={"fries","bread","cheese","meat"},
-        coins=3
+        coins=3,
+        condition=function() return customer_count>5 end
     },
     [7]={
         n=7,
         name="burgerdrink",
         t={17,25},
         ingredients={"water","bread","ketchup","meat"},
-        coins=3
+        coins=3,
+        condition=function() return customer_count>5 end
     },
     [8]={
         n=8,
         name="fries ketchup",
+        condition=function() return customer_count>2 end,
         t=24,
         ingredients={"fries","ketchup"},
         coins=3

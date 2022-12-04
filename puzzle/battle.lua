@@ -101,7 +101,7 @@ function battle_update()
 
                     local defeated = battle_check_ingredients()
                     if have_stopped and not defeated then
-                        sfx(15,1)
+                        sfx(15,0)
                     end
                 end
             end
@@ -127,7 +127,21 @@ function battle_add_person()
     data.dx=0
     data.y=8
     data.mode="hungry"
-    data.food=clone(rnd(food_types))
+
+    -- choose a new food that's allowed yet
+    local newfood
+    while true do
+        newfood=rnd(food_types)
+        if not newfood.condition or newfood.condition() then
+            break
+        end
+    end
+
+    if newfood==nil then
+        stop("no food")
+    end
+
+    data.food=clone(newfood)
     data.food.ingredients=clone(data.food.ingredients)
     add(baddies, data)
 end
