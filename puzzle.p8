@@ -4,8 +4,10 @@ __lua__
 #include puzzle/utils.lua
 #include puzzle/particle.lua
 #include newrace_src/utils.lua
+#include animal/text.lua
 #include puzzle/bigprint.lua
 #include puzzle/screen_shake.lua
+#include puzzle/start.lua
 #include puzzle/decoration.lua
 #include puzzle/food.lua
 #include puzzle/blocks.lua

@@ -66,9 +66,8 @@ block_types={
         sfx=3,
         c=col.orange,
         hide=true,
-        -- clock
         condition=function()
-            return (customer_count or 0)>3
+            return (customer_count or 0)>5
         end,
     },
     [8]={
@@ -81,7 +80,7 @@ block_types={
     [9]={
         -- clock
         condition=function()
-            return (customer_count or 0)>4
+            return (customer_count or 0)>10
         end,
         n=9,
         t=21,
@@ -99,7 +98,7 @@ block_types={
         -- bomb
         -- only add bombs after 10 customers
         condition=function()
-          return (customer_count or 0)>10 and rnd(4)<1
+          return (customer_count or 0)>15 and rnd(4)<1
         end,
         n=10,
         t=1,
