@@ -33,12 +33,6 @@ function end_init()
     mode="end"
     music(0)
 
-    -- NOTE TEMP
-    customer_count=15
-    score={}
-    score[block_name["coin"]]=98
-    -- END
-
     local high_score_coins=dget(0)
 
     local money=score[block_name["coin"]]
