@@ -3,6 +3,21 @@ dtb_init(5)
 function start_init()
     start_title_dx=0
     start_instructions=false
+
+    searchlight_colors={col.yellow, col.orange, col.red, col.pink, col.purple, col.blue, col.cyan, col.green, col.white}
+
+    -- Set the starting position of the searchlights
+    searchlights = {
+        {angle = 0, direction = 1, col=flr(rnd(#searchlight_colors))},
+        {angle = 1.57, direction = -1, col = flr(rnd(#searchlight_colors))},
+        {angle = 3.14, direction = 1, col= flr(rnd(#searchlight_colors))},
+        {angle = 4.71, direction = -1, col= flr(rnd(#searchlight_colors))},
+        {angle = 6.28, direction = 1, col= flr(rnd(#searchlight_colors))},
+    }
+
+    music(19,2000)
+
+    mode="start" -- or "move", "slide", or "end"
 end
 
 function start_update()
@@ -32,8 +47,40 @@ function start_update()
     dtb_update()
 end
 
+function draw_searchlights()
+    -- Set the color of the searchlights to white
+  
+    -- Loop through each searchlight in the array
+    for i, searchlight in pairs(searchlights) do
+      color(searchlight.col)
+
+      -- Calculate the x and y coordinates of the searchlight
+      local searchlight_x = 64 + cos(searchlight.angle/3.14/4) * 96
+      local searchlight_y = 64 + sin(searchlight.angle/3.14/4) * 96
+  
+      -- Draw the searchlight starting at the center of the screen
+      line(64, 64, searchlight_x, searchlight_y)
+      line(64, 64, searchlight_x + 1, searchlight_y)
+  
+      -- Move the searchlight in the specified direction
+      searchlight.angle = searchlight.angle + (0.05 * searchlight.direction)
+  
+      -- If the searchlight reaches the edge of the screen, reverse its direction
+      if searchlight.angle > 6.28 or searchlight.angle < 0 then
+        searchlight.direction = -searchlight.direction
+      end
+
+      -- color cycle
+      if flr(frame/30)%2==0 then
+        searchlight.col=(searchlight.col+1)%15+1
+      end
+    end
+  end
+
 function start_draw()
     cls(col.blue1)
+
+    draw_searchlights()
 
     -- draw particles
     for part in all(particles) do
@@ -56,6 +103,8 @@ function start_draw()
     print("or 🅾️ for instructions", tx, ty+10-1, col.black)
     print("press ❎ to start", tx, ty, col.white)
     print("or 🅾️ for instructions", tx, ty+10, col.white)
+
+    print("BENVIUM AND DEMON88 '22", 16, 121, col.grey2)
 
     dtb_draw()
 

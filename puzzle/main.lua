@@ -42,43 +42,13 @@ end
 
 function _init()
     frame=0
-    mode="start" -- or "move", "slide", or "end"
-    music(19,2000)
     particles={}
+    start_init()
 end
 
 function _draw()
     if mode=="end" then
-        cls(col.blue1)
-        camera(0,0)
-        clip()
-        map(32,0,0,0,16,16)
-
-        local timeY=20
-        local timeX=51
-        print("time up!", timeX,timeY, col.white)
-        spr(21, timeX-10, timeY-1, 1, 1)
-
-        
-        local bannerY=36
-        rectfill(0,bannerY-3,127,bannerY+18, col.blue1)
-        line(0,bannerY-3,127,bannerY-3, col.blue2)
-        line(0,bannerY+18,127,bannerY+18, col.black)        
-
-        local line1Y=bannerY
-        local line1X=31
-        spr(50, line1X-10, line1Y-2)
-        print(customer_count, line1X-1, line1Y, col.black)
-        print(customer_count, line1X+1, line1Y, col.black)
-        print(customer_count.." customers served", line1X, line1Y, col.white)
-
-        line1Y=bannerY+10
-        line1X=31
-        local money=score[block_name["coin"]]
-        spr(54, line1X-10, line1Y-2)
-        print(money, line1X-1, line1Y, col.black)
-        print(money, line1X+1, line1Y, col.black)
-        print(money.." earned", line1X, line1Y, col.white)
+        end_draw()
     elseif mode=="start" then
         start_draw()  
     else
@@ -246,9 +216,7 @@ function _update60()
     frame=(frame+1)%60
 
     if mode=="end" then
-        if btnp(4) then
-            _init()
-        end
+        end_update()
     elseif mode=="start" then
         start_update()
     else
@@ -410,7 +378,6 @@ end
 function game_end()
     -- print("game over please finish this")
     -- _init()
-    mode="end"
-    music(0)
+    end_init()
     -- sfx(20,1) -- end jingle
 end
