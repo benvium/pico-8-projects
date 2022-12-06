@@ -50,10 +50,10 @@ function end_init()
     end
  
     local scoreText=isHighScore and " a new high score!" or "the most money made so far is "..high_score_coins
-    local customersText=isHighCount and "you served the customers yet!" or "the most customers served so far is "..high_customer_count
+    local customersText=isHighCount and "you served the most customers yet!" or "the most customers served so far is "..high_customer_count
     dtb_disp("you made "..get_money_text(money)..". "..scoreText..". ")
 
-    dtb_disp(customersText.." have another go!",
+    dtb_disp(customersText..". have another go anyway!",
     function() _init() end)
 end
 
